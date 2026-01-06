@@ -226,7 +226,7 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     # to match peract, iterations per epoch
     TRAINING_ITERATIONS = int(exp_cfg.train_iter // (exp_cfg.bs * world_size))
     EPOCHS = exp_cfg.epochs
-    TRAIN_REPLAY_STORAGE_DIR = "replay_temporal/replay_train"
+    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/buffer/replay_temporal/replay_train"
     TRAIN_REPLAY_STORAGE_DIR_MEM = "replay_temporal_memory/replay_train"
     # TEST_REPLAY_STORAGE_DIR = "replay/replay_val"
     log_dir = get_logdir(cmd_args, exp_cfg)

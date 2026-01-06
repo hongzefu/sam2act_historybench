@@ -25,7 +25,7 @@ IMAGE_SIZE = 128
 VOXEL_SIZES = [100]  # 100x100x100 voxels
 LOW_DIM_SIZE = 4  # {left_finger_joint, right_finger_joint, gripper_open, timestep}
 
-DATA_FOLDER = "data"
+DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/rlbench"
 DATA_FOLDER_MEM = "data_memory"
 EPISODE_FOLDER = "episode%d"
 VARIATION_DESCRIPTIONS_PKL = "variation_descriptions.pkl"  # the pkl file that contains language goals for each demonstration

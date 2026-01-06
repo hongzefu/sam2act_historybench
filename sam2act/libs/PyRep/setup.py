@@ -1,9 +1,13 @@
 import codecs
 import os
 import os.path
+import sys
 from os.path import join
 
 from setuptools import setup
+
+# Add current directory to Python path to allow importing cffi_build
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import cffi_build.cffi_build as cffi_build
 
