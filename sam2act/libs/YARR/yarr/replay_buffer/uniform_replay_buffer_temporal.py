@@ -498,7 +498,6 @@ class UniformReplayBuffer_temporal(ReplayBuffer):
         Raises:
           ValueError: If args have wrong shape or dtype.
         """
-
         if (len(kwargs)) != len(signature):
             expected = str(natsort.natsorted([e.name for e in signature]))
             actual = str(natsort.natsorted(list(kwargs.keys())))
