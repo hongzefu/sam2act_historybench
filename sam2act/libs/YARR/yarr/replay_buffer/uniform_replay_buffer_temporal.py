@@ -506,6 +506,11 @@ class UniformReplayBuffer_temporal(ReplayBuffer):
             raise ValueError('Add expects {} elements, received {}.'.format(
                 len(signature), len(kwargs)) + error_list)
 
+        # #region agent log
+        import json
+        log_path = '/home/hongzefu/sam2act/.cursor/debug.log'
+        # #endregion agent log
+        
         for store_element in signature:
             arg_element = kwargs[store_element.name]
             if isinstance(arg_element, np.ndarray):
@@ -517,8 +522,53 @@ class UniformReplayBuffer_temporal(ReplayBuffer):
                 # Assume it is scalar.
                 arg_shape = tuple()
             store_element_shape = tuple(store_element.shape)
+            
+            # #region agent log
+            try:
+                with open(log_path, 'a') as f:
+                    log_entry = {
+                        "sessionId": "debug-session",
+                        "runId": "run1",
+                        "hypothesisId": "A",
+                        "location": "uniform_replay_buffer_temporal.py:519",
+                        "message": "Checking shape for element",
+                        "data": {
+                            "element_name": store_element.name,
+                            "arg_shape": str(arg_shape),
+                            "expected_shape": str(store_element_shape),
+                            "arg_type": type(arg_element).__name__,
+                            "match": arg_shape == store_element_shape
+                        },
+                        "timestamp": int(time.time() * 1000)
+                    }
+                    f.write(json.dumps(log_entry) + '\n')
+            except:
+                pass
+            # #endregion agent log
+            
             if arg_shape != store_element_shape:
-                import pdb;pdb.set_trace()
+                # #region agent log
+                try:
+                    with open(log_path, 'a') as f:
+                        log_entry = {
+                            "sessionId": "debug-session",
+                            "runId": "run1",
+                            "hypothesisId": "ALL",
+                            "location": "uniform_replay_buffer_temporal.py:521",
+                            "message": "SHAPE MISMATCH DETECTED",
+                            "data": {
+                                "element_name": store_element.name,
+                                "arg_shape": str(arg_shape),
+                                "expected_shape": str(store_element_shape),
+                                "arg_type": type(arg_element).__name__,
+                                "arg_dtype": str(getattr(arg_element, 'dtype', 'N/A'))
+                            },
+                            "timestamp": int(time.time() * 1000)
+                        }
+                        f.write(json.dumps(log_entry) + '\n')
+                except:
+                    pass
+                # #endregion agent log
                 raise ValueError('arg has shape {}, expected {}'.format(
                     arg_shape, store_element_shape))
 

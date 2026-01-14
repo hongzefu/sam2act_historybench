@@ -12,20 +12,32 @@ from sam2act.utils.lr_sched_utils import GradualWarmupScheduler
 
 # Contants
 # TODO: Unclear about the best way to handle them
-CAMERAS = ["front", "left_shoulder", "right_shoulder", "wrist"]
+#CAMERAS = ["front", "left_shoulder", "right_shoulder", "wrist"]
+CAMERAS = ["front", "wrist"]
+# SCENE_BOUNDS = [
+#     -0.3,
+#     -0.5,
+#     0.6,
+#     0.7,
+#     0.5,
+#     1.6,
+# ]  # [x_min, y_min, z_min, x_max, y_max, z_max] - the metric volume to be voxelized
 SCENE_BOUNDS = [
-    -0.3,
-    -0.5,
-    0.6,
-    0.7,
-    0.5,
-    1.6,
-]  # [x_min, y_min, z_min, x_max, y_max, z_max] - the metric volume to be voxelized
-IMAGE_SIZE = 256  #hongzefu change
+    -1,
+    -1,
+    -1,
+    1,
+    1,
+    1,
+]  
+
+IMAGE_SIZE = 128  #hongzefu change - changed from 256 to match actual data size
 VOXEL_SIZES = [100]  # 100x100x100 voxels
 LOW_DIM_SIZE = 4  # {left_finger_joint, right_finger_joint, gripper_open, timestep}
 
-DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/rlbench"
+#DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/rlbench"
+DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
+
 DATA_FOLDER_MEM = "data_memory"
 EPISODE_FOLDER = "episode%d"
 VARIATION_DESCRIPTIONS_PKL = "variation_descriptions.pkl"  # the pkl file that contains language goals for each demonstration

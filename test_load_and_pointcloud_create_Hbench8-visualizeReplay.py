@@ -29,16 +29,19 @@ import shutil  # 用于高级文件操作，如删除目录树 shutil.rmtree
 import pickle  # 用于序列化和反序列化 Python 对象，用于加载任务描述文件
 import logging # 用于日志记录，用于记录 replay buffer 保存到磁盘的信息
 from typing import List  # 用于类型注解，指定列表类型
+import h5py    # 用于读取 HDF5 文件
 
 # ============================================================================
 # 第三方库导入
 # ============================================================================
 import torch   # PyTorch 深度学习框架，用于张量操作和 GPU 管理
+import torch.nn.functional as F  # PyTorch 函数式接口，用于图像插值等操作
 import clip    # OpenAI CLIP 模型，用于提取语言特征和图像-文本匹配
 import numpy as np  # NumPy 数值计算库，用于数组操作和数值计算
 from PIL import Image  # 用于图像处理
 from rlbench.backend.utils import image_to_float_array  # 用于深度图像转换
 from pyrep.objects import VisionSensor  # 用于点云生成
+import plotly.graph_objects as go  # Plotly 用于 3D 可视化
 
 # ============================================================================
 # 路径配置：添加项目根目录到 Python 路径
@@ -67,10 +70,9 @@ import peract_colab.arm.utils as utils
 # 注意：get_stored_demo 函数定义已拷贝到本文件中，不再从外部模块导入
 # from peract_colab.rlbench.utils import get_stored_demo
 
-# 从 sam2act.libs.peract.helpers 导入关键点发现和观察提取函数
-# keypoint_discovery: 从演示数据中发现关键帧（关键点）
+# 从 sam2act.libs.peract.helpers 导入观察提取函数
 # extract_obs: 从观察对象中提取特征（图像、深度、点云等）
-from sam2act.libs.peract.helpers.demo_loading_utils import keypoint_discovery
+# 注意：keypoint_discovery 函数已在本文件中定义，不再从外部模块导入
 from sam2act.libs.peract.helpers.utils import extract_obs
 
 # 从 rlbench 导入观察和演示数据类型
@@ -82,28 +84,34 @@ from rlbench.demo import Demo
 # 从 yarr.replay_buffer 导入 ReplayBuffer 基类
 # ReplayBuffer: replay buffer 的抽象基类，定义了添加和采样数据的方法
 from yarr.replay_buffer.replay_buffer import ReplayBuffer
+from yarr.replay_buffer.uniform_replay_buffer_temporal import UniformReplayBuffer_temporal
 
-# 从 sam2act.utils.peract_utils 导入配置常量
-# CAMERAS: 相机名称列表，定义使用哪些相机视角（如 'front', 'left_shoulder' 等）
-# SCENE_BOUNDS: 场景边界，定义机器人工作空间的 3D 边界范围 [x_min, x_max, y_min, y_max, z_min, z_max]
-# EPISODE_FOLDER: 演示数据文件夹名称，通常为 'episodes'
-# VARIATION_DESCRIPTIONS_PKL: 任务变体描述文件的名称，包含不同变体的文本描述
-# DEMO_AUGMENTATION_EVERY_N: 数据增强采样间隔，每 N 帧采样一次用于数据增强
-# ROTATION_RESOLUTION: 旋转动作的离散化分辨率，将连续旋转空间离散化为固定数量的旋转动作
-# VOXEL_SIZES: 体素大小列表，用于将 3D 空间离散化为体素网格，支持多尺度表示
-from sam2act.utils.peract_utils import (
-    CAMERAS,
-    SCENE_BOUNDS,
-    EPISODE_FOLDER,
-    VARIATION_DESCRIPTIONS_PKL,
-    DEMO_AUGMENTATION_EVERY_N,
-    ROTATION_RESOLUTION,
-    VOXEL_SIZES,
-)
+# Patch UniformReplayBuffer_temporal to relax signature check
+def patched_check_add_types(self, kwargs, signature):
+    # Relaxed check: do not enforce len(kwargs) == len(signature)
+    # Just check that signature elements exist in kwargs and have correct shape
+    for store_element in signature:
+        if store_element.name not in kwargs:
+             raise ValueError('Element {} missing from kwargs'.format(store_element.name))
+        arg_element = kwargs[store_element.name]
+        if isinstance(arg_element, np.ndarray):
+            arg_shape = arg_element.shape
+        elif isinstance(arg_element, tuple) or isinstance(arg_element, list):
+            arg_shape = np.array(arg_element).shape
+        else:
+            arg_shape = tuple()
+        store_element_shape = tuple(store_element.shape)
+        if arg_shape != store_element_shape:
+            raise ValueError('arg {} has shape {}, expected {}'.format(
+                store_element.name, arg_shape, store_element_shape))
+
+UniformReplayBuffer_temporal._check_add_types = patched_check_add_types
+
 
 # ============================================================================
 # 常量定义：用于 get_stored_demo 函数
 # ============================================================================
+EPISODE_FOLDER = 'episode%d'
 CAMERA_FRONT = 'front'
 CAMERA_LS = 'left_shoulder'
 CAMERA_RS = 'right_shoulder'
@@ -114,6 +122,148 @@ IMAGE_FORMAT = '%d.png'
 LOW_DIM_PICKLE = 'low_dim_obs.pkl'
 VARIATION_NUMBER_PICKLE = 'variation_number.pkl'
 DEPTH_SCALE = 2**24 - 1
+
+# ============================================================================
+# 相机参数转换函数
+# ============================================================================
+def convert_camera_matrix_maniskill_to_coppeliasim(
+    extrinsics_opencv: np.ndarray,
+    intrinsics_opencv: np.ndarray
+) -> tuple:
+    """
+    将 Maniskill/OpenCV 格式的相机参数转换为 CoppeliaSim 格式
+    
+    参数:
+        extrinsics_opencv: (4, 4) float32, OpenCV 格式外参（世界→相机）
+        intrinsics_opencv: (3, 3) float32, OpenCV 格式内参
+    
+    返回:
+        extrinsics_coppeliasim: (4, 4) float32, CoppeliaSim 格式外参（相机→世界）
+        intrinsics_coppeliasim: (3, 3) float32, CoppeliaSim 格式内参
+    """
+    # 1. 转换外参：OpenCV 是"世界→相机"，CoppeliaSim 需要"相机→世界"
+    # 直接求逆矩阵即可
+    extrinsics_coppeliasim = np.linalg.inv(extrinsics_opencv)
+    
+    # 2. 内参格式相同，直接返回（OpenCV 和 CoppeliaSim 都使用标准针孔相机模型）
+    intrinsics_coppeliasim = intrinsics_opencv.copy()
+    
+    return extrinsics_coppeliasim, intrinsics_coppeliasim
+
+# ============================================================================
+# 辅助函数：关键点发现
+# ============================================================================
+def _is_stopped(demo, i, obs, stopped_buffer, delta=0.1):
+    """
+    判断机器人是否在某个时刻停止
+    
+    该函数用于检测演示中的停止状态，通过检查关节速度和抓取器状态来判断
+    机器人是否在某个时刻停止运动。这是关键点发现算法的一部分。
+    
+    参数:
+        demo (Demo): 完整的演示对象，包含演示的所有帧
+        i (int): 当前帧的索引
+        obs (Observation): 当前帧的观察对象
+        stopped_buffer (int): 停止缓冲区计数器，用于平滑停止检测
+        delta (float): 速度阈值，用于判断关节速度是否接近零（默认 0.1）
+    
+    返回:
+        bool: 如果机器人停止则返回 True，否则返回 False
+    """
+    next_is_not_final = i == (len(demo) - 2)
+    gripper_state_no_change = (
+            i < (len(demo) - 2) and
+            (obs.gripper_open == demo[i + 1].gripper_open and
+             obs.gripper_open == demo[i - 1].gripper_open and
+             demo[i - 2].gripper_open == demo[i - 1].gripper_open))
+    small_delta = np.allclose(obs.joint_velocities, 0, atol=delta)
+    stopped = (stopped_buffer <= 0 and small_delta and
+               (not next_is_not_final) and gripper_state_no_change)
+    return stopped
+
+
+def keypoint_discovery(demo: Demo,
+                       stopping_delta=0.1,
+                       method='heuristic') -> List[int]:
+    """
+    从演示数据中发现关键帧（关键点）
+    
+    该函数从演示数据中识别出重要的时刻（关键点），这些关键点通常对应
+    任务执行中的重要动作，例如抓取、放置、打开/关闭等。关键点用于
+    将长演示序列分解为更短的子任务，便于强化学习训练。
+    
+    参数:
+        demo (Demo): 完整的演示对象，包含演示的所有帧（Observation 对象列表）
+        stopping_delta (float): 停止检测的速度阈值，用于判断机器人是否停止（默认 0.1）
+        method (str): 关键点发现方法，可选值：
+                     - 'heuristic': 启发式方法，基于抓取器状态变化和停止检测（默认）
+                     - 'random': 随机选择关键点
+                     - 'fixed_interval': 固定间隔选择关键点
+    
+    返回:
+        List[int]: 关键点帧索引列表，例如 [10, 25, 40, 55]
+                  表示第 10、25、40、55 帧是关键点
+    
+    工作流程（heuristic 方法）:
+        1. 遍历演示的所有帧
+        2. 检测抓取器状态变化（打开/关闭）
+        3. 检测机器人停止状态
+        4. 在状态变化或停止时标记为关键点
+        5. 清理相邻的关键点（如果两个关键点太接近，移除其中一个）
+    
+    注意:
+        - heuristic 方法是最常用的方法，能够自动识别任务中的重要时刻
+        - random 方法用于数据增强或实验对比
+        - fixed_interval 方法用于均匀采样，适用于长演示序列
+    """
+    episode_keypoints = []
+    if method == 'heuristic':
+        prev_gripper_open = demo[0].gripper_open
+        stopped_buffer = 0
+        for i, obs in enumerate(demo):
+            stopped = _is_stopped(demo, i, obs, stopped_buffer, stopping_delta)
+            stopped_buffer = 4 if stopped else stopped_buffer - 1
+            # If change in gripper, or end of episode.
+            last = i == (len(demo) - 1)
+            if i != 0 and (obs.gripper_open != prev_gripper_open or
+                           last or stopped):
+                episode_keypoints.append(i)
+            prev_gripper_open = obs.gripper_open
+        if len(episode_keypoints) > 1 and (episode_keypoints[-1] - 1) == \
+                episode_keypoints[-2]:
+            episode_keypoints.pop(-2)
+        logging.debug('Found %d keypoints.' % len(episode_keypoints),
+                      episode_keypoints)
+        return episode_keypoints
+
+    elif method == 'random':
+        # Randomly select keypoints.
+        episode_keypoints = np.random.choice(
+            range(len(demo)),
+            size=20,
+            replace=False)
+        episode_keypoints.sort()
+        return episode_keypoints
+
+    elif method == 'fixed_interval':
+        # Fixed interval.
+        episode_keypoints = []
+        segment_length = len(demo) // 20
+        for i in range(0, len(demo), segment_length):
+            episode_keypoints.append(i)
+        return episode_keypoints
+
+    elif method == 'dataset':
+        episode_keypoints = []
+        for i, obs in enumerate(demo):
+             # Check if keypoint_type exists and is valid (not None and not string "None")
+             if 'keypoint_type' in obs.misc and obs.misc['keypoint_type'] is not None and obs.misc['keypoint_type'] != 'None':
+                 episode_keypoints.append(i)
+        return episode_keypoints
+
+    else:
+        raise NotImplementedError
+
 
 # ============================================================================
 # 辅助函数：从磁盘加载存储的演示数据
@@ -136,6 +286,226 @@ def get_stored_demo(data_path, index):
     返回:
         obs: 观察对象列表，每个元素是一个 Observation 对象，包含该帧的所有观察信息
     """
+    if data_path.endswith('.h5'):
+        class DemoList(list):
+            pass
+        obs = DemoList()
+        
+        with h5py.File(data_path, 'r') as f:
+            # 假设只有一个环境 env_BinFill 或类似的，取第一个键作为环境名
+            # 或者搜索包含 episode_X 的组
+            env_name = list(f.keys())[0]
+            episode_name = f'episode_{index}'
+            
+            # 如果直接在根目录下找不到，尝试进入环境目录
+            if episode_name not in f[env_name]:
+                 # 也许结构是 env_name/episode_0
+                 if episode_name in f:
+                     # 这种情况不太可能，基于之前的 inspect，是 env_BinFill/episode_0
+                     pass
+                 else:
+                     # 尝试在 env_name 下查找
+                     if episode_name not in f[env_name]:
+                         raise ValueError(f"Episode {index} not found in {data_path} under {env_name}")
+                     ep_grp = f[env_name][episode_name]
+            else:
+                ep_grp = f[env_name][episode_name]
+
+            # 获取所有时间步，按索引排序
+            # 过滤出 record_timestep_X 的键
+            timesteps = sorted([k for k in ep_grp.keys() if k.startswith('record_timestep_')], 
+                               key=lambda x: int(x.split('_')[-1]))
+            
+            for ts_name in timesteps:
+                ts_grp = ep_grp[ts_name]
+                
+                # 创建 Observation 对象
+                # 初始化所有参数为 None，后续填充
+                current_obs = Observation(
+                    left_shoulder_rgb=None, left_shoulder_depth=None, left_shoulder_mask=None, left_shoulder_point_cloud=None,
+                    right_shoulder_rgb=None, right_shoulder_depth=None, right_shoulder_mask=None, right_shoulder_point_cloud=None,
+                    overhead_rgb=None, overhead_depth=None, overhead_mask=None, overhead_point_cloud=None,
+                    wrist_rgb=None, wrist_depth=None, wrist_mask=None, wrist_point_cloud=None,
+                    front_rgb=None, front_depth=None, front_mask=None, front_point_cloud=None,
+                    joint_velocities=None, joint_positions=None, joint_forces=None,
+                    gripper_open=None, gripper_pose=None, gripper_matrix=None, gripper_joint_positions=None, gripper_touch_forces=None,
+                    task_low_dim_state=None, ignore_collisions=None, misc=None
+                )
+                
+                # --- 1. 加载 RGB 图像 ---
+                if 'image' in ts_grp:
+                    img = np.array(ts_grp['image'])
+                    # 数据集中的图像已经是 128x128，不需要下变换
+                    current_obs.front_rgb = img
+                else:
+                    current_obs.front_rgb = np.zeros((128, 128, 3), dtype=np.uint8)
+                    
+                if 'wrist_image' in ts_grp:
+                    img = np.array(ts_grp['wrist_image'])
+                    # 数据集中的图像已经是 128x128，不需要下变换
+                    current_obs.wrist_rgb = img
+                else:
+                    current_obs.wrist_rgb = np.zeros((128, 128, 3), dtype=np.uint8)
+                
+                # 填充缺失的相机
+                # current_obs.left_shoulder_rgb = np.zeros((128, 128, 3), dtype=np.uint8)
+                # current_obs.right_shoulder_rgb = np.zeros((128, 128, 3), dtype=np.uint8)
+
+                # --- 2. 加载深度图像 ---
+                # 假设 int16 是毫米，转换为米
+                if 'base_camera_depth' in ts_grp:
+                     depth = np.array(ts_grp['base_camera_depth']).astype(np.float32) / 1000.0
+                     if depth.ndim == 3:
+                         depth = depth.squeeze(-1)
+                     # 降采样到 128x128
+                     depth_tensor = torch.from_numpy(depth).unsqueeze(0).unsqueeze(0)  # (1, 1, H, W)
+                     depth_resized = F.interpolate(depth_tensor, size=(128, 128), mode='bilinear', align_corners=False)
+                     current_obs.front_depth = depth_resized.squeeze(0).squeeze(0).numpy().astype(np.float32)
+                else:
+                    current_obs.front_depth = np.zeros((128, 128), dtype=np.float32)
+
+                if 'wrist_camera_depth' in ts_grp:
+                     depth = np.array(ts_grp['wrist_camera_depth']).astype(np.float32) / 1000.0
+                     if depth.ndim == 3:
+                         depth = depth.squeeze(-1)
+                     # 降采样到 128x128
+                     depth_tensor = torch.from_numpy(depth).unsqueeze(0).unsqueeze(0)  # (1, 1, H, W)
+                     depth_resized = F.interpolate(depth_tensor, size=(128, 128), mode='bilinear', align_corners=False)
+                     current_obs.wrist_depth = depth_resized.squeeze(0).squeeze(0).numpy().astype(np.float32)
+                else:
+                     current_obs.wrist_depth = np.zeros((128, 128), dtype=np.float32)
+                
+                # 填充缺失深度
+                # current_obs.left_shoulder_depth = np.zeros((128, 128), dtype=np.float32)
+                # current_obs.right_shoulder_depth = np.zeros((128, 128), dtype=np.float32)
+
+                # --- 3. 加载机器人状态 ---
+                # robot_endeffector_p: (1, 3)
+                # robot_endeffector_q: (1, 4)
+                gripper_pos = np.array(ts_grp['robot_endeffector_p']).flatten()
+                gripper_quat = np.array(ts_grp['robot_endeffector_q']).flatten()
+                current_obs.gripper_pose = np.concatenate([gripper_pos, gripper_quat])
+                
+                if 'action' in ts_grp:
+                    action = np.array(ts_grp['action'])
+                    current_obs.gripper_open = float(action[-1])
+
+                
+                # 设置 gripper_joint_positions（左右手指关节位置）
+                # 对于 HDF5 文件，如果没有这个字段，使用默认值
+                # 根据 gripper_open 状态设置：打开时为 [0.04, 0.04]，关闭时为 [0.0, 0.0]
+                # 注意：extract_obs 会将值裁剪到 [0.0, 0.04] 范围
+                if current_obs.gripper_open > 0:
+                    # 夹爪打开时，手指关节位置接近最大值 0.04
+                    current_obs.gripper_joint_positions = np.array([0.04, 0.04], dtype=np.float32)
+                else:
+                    # 夹爪关闭时，手指关节位置为 0.0
+                    current_obs.gripper_joint_positions = np.array([0.0, 0.0], dtype=np.float32)
+                
+                current_obs.ignore_collisions = 0
+                
+                # --- 4. 构建 misc ---
+                current_obs.misc = {}
+
+                # --- Read Keypoint Info ---
+                if 'keypoint_type' in ts_grp:
+                    val = ts_grp['keypoint_type'][()]
+                    if isinstance(val, bytes):
+                        val = val.decode('utf-8')
+                    current_obs.misc['keypoint_type'] = val
+                else:
+                    current_obs.misc['keypoint_type'] = None
+
+                if 'keypoint_solve_function' in ts_grp:
+                    val = ts_grp['keypoint_solve_function'][()]
+                    if isinstance(val, bytes):
+                        val = val.decode('utf-8')
+                    current_obs.misc['keypoint_solve_function'] = val
+                else:
+                    current_obs.misc['keypoint_solve_function'] = None
+                
+                if 'keypoint_gripper_open' in ts_grp:
+                     current_obs.misc['keypoint_gripper_open'] = bool(ts_grp['keypoint_gripper_open'][()])
+                else:
+                     current_obs.misc['keypoint_gripper_open'] = None
+                
+                # Extrinsics and Intrinsics
+                if 'base_camera_extrinsic_opencv' in ts_grp and 'base_camera_intrinsic_opencv' in ts_grp:
+                    ext_opencv = np.array(ts_grp['base_camera_extrinsic_opencv'])
+                    intr_opencv = np.array(ts_grp['base_camera_intrinsic_opencv'])
+                    if ext_opencv.ndim == 3: ext_opencv = ext_opencv[0]
+                    if intr_opencv.ndim == 3: intr_opencv = intr_opencv[0]
+                    if ext_opencv.shape == (3, 4):
+                        ext_opencv = np.vstack([ext_opencv, [0, 0, 0, 1]])
+                    
+                    # 转换为 CoppeliaSim 格式
+                    ext_coppeliasim, intr_coppeliasim = convert_camera_matrix_maniskill_to_coppeliasim(
+                        ext_opencv, intr_opencv
+                    )
+                    current_obs.misc['front_camera_extrinsics'] = ext_coppeliasim
+                    current_obs.misc['front_camera_intrinsics'] = intr_coppeliasim
+
+                if 'wrist_camera_extrinsic_opencv' in ts_grp and 'wrist_camera_intrinsic_opencv' in ts_grp:
+                    ext_opencv = np.array(ts_grp['wrist_camera_extrinsic_opencv'])
+                    intr_opencv = np.array(ts_grp['wrist_camera_intrinsic_opencv'])
+                    if ext_opencv.ndim == 3: ext_opencv = ext_opencv[0]
+                    if intr_opencv.ndim == 3: intr_opencv = intr_opencv[0]
+                    if ext_opencv.shape == (3, 4):
+                        ext_opencv = np.vstack([ext_opencv, [0, 0, 0, 1]])
+                    
+                    # 转换为 CoppeliaSim 格式
+                    ext_coppeliasim, intr_coppeliasim = convert_camera_matrix_maniskill_to_coppeliasim(
+                        ext_opencv, intr_opencv
+                    )
+                    current_obs.misc['wrist_camera_extrinsics'] = ext_coppeliasim
+                    current_obs.misc['wrist_camera_intrinsics'] = intr_coppeliasim
+
+                # Mock missing cameras misc
+                # current_obs.misc['left_shoulder_camera_extrinsics'] = np.eye(4)
+                # current_obs.misc['left_shoulder_camera_intrinsics'] = np.eye(3)
+                # current_obs.misc['right_shoulder_camera_extrinsics'] = np.eye(4)
+                # current_obs.misc['right_shoulder_camera_intrinsics'] = np.eye(3)
+
+                # --- 5. 生成点云 ---
+                if 'front_camera_extrinsics' in current_obs.misc:
+                    current_obs.front_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+                        current_obs.front_depth,
+                        current_obs.misc['front_camera_extrinsics'],
+                        current_obs.misc['front_camera_intrinsics']
+                    )
+                else:
+                    # 如果没有相机参数，生成零填充的点云（图像格式）
+                    current_obs.front_point_cloud = np.zeros((128, 128, 3), dtype=np.float32)
+                     
+                # 为 left_shoulder 和 right_shoulder 生成点云（即使深度为零，也要生成正确形状的点云）
+                # 使用相机参数生成点云，即使深度为零也会生成正确形状的点云 (128, 128, 3)
+                # current_obs.left_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+                #     current_obs.left_shoulder_depth,
+                #     current_obs.misc['left_shoulder_camera_extrinsics'],
+                #     current_obs.misc['left_shoulder_camera_intrinsics']
+                # )
+                # current_obs.right_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+                #     current_obs.right_shoulder_depth,
+                #     current_obs.misc['right_shoulder_camera_extrinsics'],
+                #     current_obs.misc['right_shoulder_camera_intrinsics']
+                # )
+                
+                # 如果有 wrist camera 参数，生成点云
+                if 'wrist_camera_extrinsics' in current_obs.misc:
+                     current_obs.wrist_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+                        current_obs.wrist_depth,
+                        current_obs.misc['wrist_camera_extrinsics'],
+                        current_obs.misc['wrist_camera_intrinsics']
+                    )
+                else:
+                    # 如果没有 wrist camera 参数，生成零填充的点云（图像格式）
+                    current_obs.wrist_point_cloud = np.zeros((128, 128, 3), dtype=np.float32)
+
+                obs.append(current_obs)
+        
+        obs.variation_number = 0
+        return obs
+
     episode_path = os.path.join(data_path, EPISODE_FOLDER % index)
     
     # 加载低维观察数据（pickle 文件）
@@ -151,8 +521,8 @@ def get_stored_demo(data_path, index):
     for i in range(num_steps):
         # 加载 RGB 图像
         obs[i].front_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_FRONT, IMAGE_RGB), IMAGE_FORMAT % i)))
-        obs[i].left_shoulder_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_LS, IMAGE_RGB), IMAGE_FORMAT % i)))
-        obs[i].right_shoulder_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_RS, IMAGE_RGB), IMAGE_FORMAT % i)))
+        # obs[i].left_shoulder_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_LS, IMAGE_RGB), IMAGE_FORMAT % i)))
+        # obs[i].right_shoulder_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_RS, IMAGE_RGB), IMAGE_FORMAT % i)))
         obs[i].wrist_rgb = np.array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_WRIST, IMAGE_RGB), IMAGE_FORMAT % i)))
         
         # 加载并处理深度图像（front 相机）
@@ -162,16 +532,17 @@ def get_stored_demo(data_path, index):
         obs[i].front_depth = near + obs[i].front_depth * (far - near)
         
         # 加载并处理深度图像（left_shoulder 相机）
-        obs[i].left_shoulder_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_LS, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
-        near = obs[i].misc['%s_camera_near' % (CAMERA_LS)]
-        far = obs[i].misc['%s_camera_far' % (CAMERA_LS)]
-        obs[i].left_shoulder_depth = near + obs[i].left_shoulder_depth * (far - near)
+        # obs[i].left_shoulder_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_LS, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
+        # obs[i].left_shoulder_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_LS, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
+        # near = obs[i].misc['%s_camera_near' % (CAMERA_LS)]
+        # far = obs[i].misc['%s_camera_far' % (CAMERA_LS)]
+        # obs[i].left_shoulder_depth = near + obs[i].left_shoulder_depth * (far - near)
         
         # 加载并处理深度图像（right_shoulder 相机）
-        obs[i].right_shoulder_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_RS, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
-        near = obs[i].misc['%s_camera_near' % (CAMERA_RS)]
-        far = obs[i].misc['%s_camera_far' % (CAMERA_RS)]
-        obs[i].right_shoulder_depth = near + obs[i].right_shoulder_depth * (far - near)
+        # obs[i].right_shoulder_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_RS, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
+        # near = obs[i].misc['%s_camera_near' % (CAMERA_RS)]
+        # far = obs[i].misc['%s_camera_far' % (CAMERA_RS)]
+        # obs[i].right_shoulder_depth = near + obs[i].right_shoulder_depth * (far - near)
         
         # 加载并处理深度图像（wrist 相机）
         obs[i].wrist_depth = image_to_float_array(Image.open(os.path.join(episode_path, '%s_%s' % (CAMERA_WRIST, IMAGE_DEPTH), IMAGE_FORMAT % i)), DEPTH_SCALE)
@@ -185,16 +556,16 @@ def get_stored_demo(data_path, index):
             obs[i].misc['front_camera_extrinsics'],
             obs[i].misc['front_camera_intrinsics']
         )
-        obs[i].left_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
-            obs[i].left_shoulder_depth, 
-            obs[i].misc['left_shoulder_camera_extrinsics'],
-            obs[i].misc['left_shoulder_camera_intrinsics']
-        )
-        obs[i].right_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
-            obs[i].right_shoulder_depth, 
-            obs[i].misc['right_shoulder_camera_extrinsics'],
-            obs[i].misc['right_shoulder_camera_intrinsics']
-        )
+        # obs[i].left_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+        #     obs[i].left_shoulder_depth, 
+        #     obs[i].misc['left_shoulder_camera_extrinsics'],
+        #     obs[i].misc['left_shoulder_camera_intrinsics']
+        # )
+        # obs[i].right_shoulder_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
+        #     obs[i].right_shoulder_depth, 
+        #     obs[i].misc['right_shoulder_camera_extrinsics'],
+        #     obs[i].misc['right_shoulder_camera_intrinsics']
+        # )
         obs[i].wrist_point_cloud = VisionSensor.pointcloud_from_depth_and_camera_params(
             obs[i].wrist_depth, 
             obs[i].misc['wrist_camera_extrinsics'],
@@ -565,31 +936,7 @@ def _add_keypoints_to_replay_temporal(
         # 将语言嵌入添加到观察字典中
         # lang_embs[0] 是第一个（也是唯一一个）样本的嵌入
         # 转换为 NumPy 数组并移动到 CPU
-        lang_goal_embs_value = lang_embs[0].float().detach().cpu().numpy()
-        # #region agent log
-        import json
-        import time
-        log_path = '/home/hongzefu/sam2act/.cursor/debug.log'
-        try:
-            with open(log_path, 'a') as f:
-                log_entry = {
-                    "sessionId": "debug-session",
-                    "runId": "run1",
-                    "hypothesisId": "A",
-                    "location": "test_get_dataset_temporalv4.py:568",
-                    "message": "lang_goal_embs shape",
-                    "data": {
-                        "lang_embs_shape": str(lang_embs.shape),
-                        "lang_embs_0_shape": str(lang_goal_embs_value.shape),
-                        "expected_shape": "(77, 512)"
-                    },
-                    "timestamp": int(time.time() * 1000)
-                }
-                f.write(json.dumps(log_entry) + '\n')
-        except:
-            pass
-        # #endregion agent log
-        obs_dict["lang_goal_embs"] = lang_goal_embs_value
+        obs_dict["lang_goal_embs"] = lang_embs[0].float().detach().cpu().numpy()
         
         # 保存当前动作作为下一个关键点的前一个动作
         prev_action = np.copy(action)
@@ -634,39 +981,6 @@ def _add_keypoints_to_replay_temporal(
         # timeout 标志（当前未使用，设为 False）
         timeout = False
         
-        # #region agent log
-        import json
-        import time
-        log_path = '/home/hongzefu/sam2act/.cursor/debug.log'
-        try:
-            with open(log_path, 'a') as f:
-                key_shapes = {}
-                for k, v in others.items():
-                    if isinstance(v, np.ndarray):
-                        key_shapes[k] = str(v.shape)
-                    elif isinstance(v, (tuple, list)):
-                        key_shapes[k] = str(np.array(v).shape)
-                    else:
-                        key_shapes[k] = "scalar"
-                log_entry = {
-                    "sessionId": "debug-session",
-                    "runId": "run1",
-                    "hypothesisId": "B",
-                    "location": "test_get_dataset_temporalv4.py:614",
-                    "message": "Data shapes before replay.add",
-                    "data": {
-                        "action_shape": str(action.shape) if isinstance(action, np.ndarray) else str(type(action)),
-                        "reward": str(reward),
-                        "terminal": str(terminal),
-                        "key_shapes": key_shapes
-                    },
-                    "timestamp": int(time.time() * 1000)
-                }
-                f.write(json.dumps(log_entry) + '\n')
-        except:
-            pass
-        # #endregion agent log
-        
         # 将样本添加到 replay buffer
         replay.add(
             task,                          # 任务名称
@@ -707,13 +1021,14 @@ def _add_keypoints_to_replay_temporal(
         obs_dict_tp1["lang_goal_embs"] = lang_embs[0].float().detach().cpu().numpy()
         
         # 移除不需要的键（如果存在）
-        obs_dict_tp1.pop("wrist_world_to_cam", None)
-        
-        # 添加最终观察数据（动作索引和目标信息）
-        obs_dict_tp1.update(final_obs)
-        
-        # 将最终状态添加到 replay buffer（使用特殊的 add_final 方法）
-        replay.add_final(task, task_replay_storage_folder, **obs_dict_tp1)
+    obs_dict_tp1.pop("wrist_world_to_cam", None)
+    
+    # 添加最终观察数据（动作索引和目标信息）
+    obs_dict_tp1.update(final_obs)
+    others.update(obs_dict_tp1)
+
+    # 将最终状态添加到 replay buffer（使用特殊的 add_final 方法）
+    replay.add_final(task, task_replay_storage_folder, **others)
 
 
 # ============================================================================
@@ -844,18 +1159,25 @@ def fill_replay_temporal(
             # ====================================================================
             # 步骤 2.2: 加载任务描述
             # ====================================================================
-            # 构建任务变体描述文件的路径
-            # episode_folder 通常是 'episode_%d' 或 'episodes'，需要格式化
-            varation_descs_pkl_file = os.path.join(
-                data_path,                          # 数据根目录
-                episode_folder % d_idx,             # 演示文件夹（格式化后的路径）
-                variation_desriptions_pkl           # 描述文件名
-            )
-            
-            # 从 pickle 文件中加载任务描述列表
-            # descs 是一个字符串列表，包含不同变体的任务描述
-            with open(varation_descs_pkl_file, "rb") as f:
-                descs = pickle.load(f)
+            # 检查是否是 HDF5 文件
+            if data_path.endswith('.h5'):
+                # 对于 HDF5 文件，使用默认的任务描述
+                # 可以根据任务名称自定义描述
+                descs = [f"{task} task"]  # 默认任务描述
+            else:
+                # 对于标准的 RLBench 数据结构，从 pickle 文件中加载任务描述
+                # 构建任务变体描述文件的路径
+                # episode_folder 通常是 'episode_%d' 或 'episodes'，需要格式化
+                varation_descs_pkl_file = os.path.join(
+                    data_path,                          # 数据根目录
+                    episode_folder % d_idx,             # 演示文件夹（格式化后的路径）
+                    variation_desriptions_pkl           # 描述文件名
+                )
+                
+                # 从 pickle 文件中加载任务描述列表
+                # descs 是一个字符串列表，包含不同变体的任务描述
+                with open(varation_descs_pkl_file, "rb") as f:
+                    descs = pickle.load(f)
             
             # ====================================================================
             # 步骤 2.3: 提取关键点
@@ -863,11 +1185,15 @@ def fill_replay_temporal(
             # 从演示数据中发现关键点（重要时刻的帧索引）
             # episode_keypoints 是一个整数列表，例如 [10, 25, 40, 55]
             # 表示第 10、25、40、55 帧是关键点
-            episode_keypoints = keypoint_discovery(demo)
+            
+            # Determine keypoint discovery method
+
+
+            episode_keypoints = keypoint_discovery(demo, method='dataset')
             
             # 初始化下一个关键点索引（用于追踪当前处理到哪个关键点）
             next_keypoint_idx = 0
-            
+
             # ====================================================================
             # 步骤 2.4: 遍历演示的每一帧（数据增强）
             # ====================================================================
@@ -955,6 +1281,25 @@ def fill_replay_temporal(
         # 打印完成信息
         print("Replay filled with demos.")
 
+
+# 从 sam2act.utils.peract_utils 导入配置常量
+# CAMERAS: 相机名称列表，定义使用哪些相机视角（如 'front', 'left_shoulder' 等）
+# SCENE_BOUNDS: 场景边界，定义机器人工作空间的 3D 边界范围 [x_min, x_max, y_min, y_max, z_min, z_max]
+# EPISODE_FOLDER: 演示数据文件夹名称，通常为 'episodes'
+# VARIATION_DESCRIPTIONS_PKL: 任务变体描述文件的名称，包含不同变体的文本描述
+# DEMO_AUGMENTATION_EVERY_N: 数据增强采样间隔，每 N 帧采样一次用于数据增强
+# ROTATION_RESOLUTION: 旋转动作的离散化分辨率，将连续旋转空间离散化为固定数量的旋转动作
+# VOXEL_SIZES: 体素大小列表，用于将 3D 空间离散化为体素网格，支持多尺度表示
+from sam2act.utils.peract_utils import (
+    CAMERAS,
+    SCENE_BOUNDS,
+    EPISODE_FOLDER,
+    VARIATION_DESCRIPTIONS_PKL,
+    DEMO_AUGMENTATION_EVERY_N,
+    ROTATION_RESOLUTION,
+    VOXEL_SIZES,
+)
+CAMERAS = ['front', 'wrist']
 
 # 从 yarr 库导入 PyTorch replay buffer 包装器
 # PyTorchReplayBuffer: 将 replay buffer 包装为 PyTorch Dataset，支持 DataLoader 使用
@@ -1068,13 +1413,19 @@ def get_dataset_temporal(
     # ========================================================================
     # 对每个任务分别处理，将演示数据加载到对应的 replay buffer 中
     for task in tasks:  # 遍历任务列表中的每个任务
-        # 构建训练集和验证集的演示数据路径
-        # RLBench 数据集的目录结构：train/{task}/all_variations/episodes/
-        EPISODES_FOLDER_TRAIN = f"train/{task}/all_variations/episodes"
-        EPISODES_FOLDER_VAL = f"val/{task}/all_variations/episodes"
-        # 拼接完整的数据路径
-        data_path_train = os.path.join(DATA_FOLDER, EPISODES_FOLDER_TRAIN)
-        data_path_val = os.path.join(DATA_FOLDER, EPISODES_FOLDER_VAL)
+        # 检查 DATA_FOLDER 是否是 HDF5 文件路径
+        if DATA_FOLDER.endswith('.h5'):
+            # 如果是 HDF5 文件，直接使用该路径
+            data_path_train = DATA_FOLDER
+            data_path_val = DATA_FOLDER  # 对于 HDF5 文件，训练集和验证集使用同一个文件
+        else:
+            # 对于标准的 RLBench 数据结构，构建训练集和验证集的演示数据路径
+            # RLBench 数据集的目录结构：train/{task}/all_variations/episodes/
+            EPISODES_FOLDER_TRAIN = f"train/{task}/all_variations/episodes"
+            EPISODES_FOLDER_VAL = f"val/{task}/all_variations/episodes"
+            # 拼接完整的数据路径
+            data_path_train = os.path.join(DATA_FOLDER, EPISODES_FOLDER_TRAIN)
+            data_path_val = os.path.join(DATA_FOLDER, EPISODES_FOLDER_VAL)
         
         # 构建 replay buffer 的存储路径（每个任务有独立的存储目录）
         train_replay_storage_folder = f"{TRAIN_REPLAY_STORAGE_DIR}/{task}"
@@ -1203,24 +1554,26 @@ TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_
 
 # RLBench 原始数据集的根目录
 # 包含所有任务的演示数据，目录结构为：{DATA_FOLDER}/train/{task}/all_variations/episodes/
-DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/dataset/rlbench-18-tasks/data"
+# 如果使用 HDF5 文件，直接设置为 HDF5 文件路径
+DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/record_dataset_BinFill.h5"
 
 # ============================================================================
 # 数据集创建参数
 # ============================================================================
 # 任务列表：要处理的任务名称列表
 # 可以包含多个任务，例如：["close_jar", "open_drawer", "pick_and_lift_simple"]
-tasks = ["close_jar"]  # 当前只测试单个任务
+# 对于 HDF5 文件，任务名称可以自定义（用于 replay buffer 存储目录的组织）
+tasks = ["BinFill"]  # 当前使用 HDF5 数据，任务名称自定义
 
 # 批次大小配置
-BATCH_SIZE_TRAIN = 4        # 训练集的批次大小，影响 replay buffer 的采样批量
+BATCH_SIZE_TRAIN = 2        # 训练集的批次大小，影响 replay buffer 的采样批量
 BATCH_SIZE_TEST = None      # 测试集的批次大小，如果 only_train=True 可以设为 None
 
 # 测试集 replay buffer 存储目录（如果 only_train=False 需要设置）
 TEST_REPLAY_STORAGE_DIR = None
 
 # 演示数量配置
-NUM_TRAIN = 10   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
+NUM_TRAIN = 2   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
 NUM_VAL = None   # 每个任务使用的验证演示数量，如果 only_train=True 可以设为 None
 
 # 数据刷新标志
@@ -1233,7 +1586,7 @@ refresh_replay = True  # 刷新已有数据，重新生成 replay buffer
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # 数据加载配置
-num_workers = 2  # DataLoader 的并行工作进程数，用于加速数据加载
+num_workers = 4  # DataLoader 的并行工作进程数，用于加速数据加载
 
 # 数据集模式配置
 only_train = True  # 是否只创建训练集，如果为 True 则不创建测试集
@@ -1248,20 +1601,64 @@ rank = 0  # 进程排名，单进程训练时通常为 0，多进程训练时用
 # "transition_uniform" 表示均匀采样所有状态转换，确保每个转换被采样的概率相等
 sample_distribution_mode = "transition_uniform"
 
+# ============================================================================
+# 辅助函数：批量将3D点投影到2D像素坐标
+# ============================================================================
+def project_points_to_pixels(points, extrinsics, intrinsics):
+    """
+    批量将3D点云投影到2D像素坐标
+    
+    参数:
+        points: (N, 3) numpy数组，世界坐标系下的3D点
+        extrinsics: (4, 4) numpy数组，相机外参（CoppeliaSim格式：相机→世界）
+        intrinsics: (3, 3) numpy数组，相机内参
+    
+    返回:
+        pixel_coords: (N, 2) numpy数组，像素坐标 (u, v)
+        valid_mask: (N,) bool数组，标记哪些点在相机前方（深度>0）
+    """
+    # 转换为齐次坐标 (N, 4)
+    points_homo = np.concatenate([points, np.ones((points.shape[0], 1))], axis=1)
+    
+    # 外参是CoppeliaSim格式（相机→世界），需要求逆得到世界→相机转换
+    world_to_cam = np.linalg.inv(extrinsics)
+    
+    # 将世界坐标转换为相机坐标 (N, 4)
+    points_cam_homo = (world_to_cam @ points_homo.T).T
+    
+    # 提取相机坐标 (N, 3)
+    points_cam = points_cam_homo[:, :3]
+    
+    # 检查哪些点在相机前方（深度>0）
+    valid_mask = points_cam[:, 2] > 0
+    
+    # 使用内参将相机坐标投影到像素坐标
+    # 透视投影: u = fx * (X/Z) + cx, v = fy * (Y/Z) + cy
+    fx = intrinsics[0, 0]
+    fy = intrinsics[1, 1]
+    cx = intrinsics[0, 2]
+    cy = intrinsics[1, 2]
+    
+    # 避免除以0，对于深度<=0的点使用1
+    z = np.maximum(points_cam[:, 2], 1e-8)
+    
+    u = fx * (points_cam[:, 0] / z) + cx
+    v = fy * (points_cam[:, 1] / z) + cy
+    
+    # 组合为 (N, 2) 数组
+    pixel_coords = np.stack([u, v], axis=1)
+    
+    return pixel_coords, valid_mask
+
 def main():
     """
     主测试函数
     
-    该函数执行完整的数据集创建和读取测试流程：
+    该函数使用 get_dataset_temporal 创建数据集并迭代读取数据：
     1. 打印配置信息
-    2. 调用 get_dataset_temporal 创建数据集
-    3. 从数据集中读取样本并打印详细信息
-    4. 验证数据格式和内容是否正确
-    
-    测试流程分为三个步骤：
-    - [1/3] 创建数据集：调用 get_dataset_temporal 函数
-    - [2/3] 创建迭代器：为数据集创建迭代器用于读取样本
-    - [3/3] 读取样本：读取并打印前 5 个样本的详细信息
+    2. 调用 get_dataset_temporal 创建训练数据集
+    3. 创建数据迭代器并读取样本
+    4. 打印样本信息以验证数据格式
     """
     # ========================================================================
     # 步骤 0: 打印配置信息
@@ -1310,15 +1707,16 @@ def main():
         # ====================================================================
         # 为训练集创建迭代器，用于逐个读取样本
         # 注意：这里使用的是训练集，因为 only_train=True
-        print("\n[2/3] 开始读取测试样本...")
+        print("\n[2/3] 创建数据迭代器...")
         data_iter = iter(train_dataset)
+        print("✓ 数据迭代器创建成功!")
         
         # ====================================================================
         # 步骤 3: 读取并打印样本信息
         # ====================================================================
         # 读取前 5 个样本，打印每个样本的详细信息
         # 这有助于验证数据格式是否正确，以及了解数据的结构
-        print("\n[3/3] 读取并打印样本信息:")
+        print("\n[3/4] 读取并打印样本信息:")
         print("-" * 80)
         
         # 尝试读取 5 个样本
@@ -1357,6 +1755,237 @@ def main():
                 import traceback
                 traceback.print_exc()  # 打印完整的错误堆栈信息
                 break
+        
+        # ====================================================================
+        # 步骤 4: 读取并可视化 front_point_cloud
+        # ====================================================================
+        print("\n[4/4] 读取并可视化 replay 中的 front_point_cloud:")
+        print("-" * 80)
+        
+        # 重新创建迭代器以读取第一个样本
+        data_iter = iter(train_dataset)
+        
+        try:
+            # 读取第一个样本
+            batch = next(data_iter)
+            
+            # 检查是否包含 front_point_cloud
+            if 'front_point_cloud' not in batch:
+                print("  警告: batch 中未找到 'front_point_cloud' 键")
+                print(f"  可用的键: {list(batch.keys())}")
+            else:
+                # 提取 front_point_cloud
+                front_pc = batch['front_point_cloud']
+                print(f"  front_point_cloud 形状: {front_pc.shape}")
+                print(f"  front_point_cloud 数据类型: {front_pc.dtype}")
+                
+                # 如果是 PyTorch 张量，转换为 NumPy
+                if isinstance(front_pc, torch.Tensor):
+                    front_pc = front_pc.cpu().numpy()
+                
+                # 选择第一个样本（batch 的第一个元素）
+                # 形状可能是多种格式：
+                # - (batch_size, timesteps, 3, H, W) - 时序数据
+                # - (batch_size, 3, H, W) - 标准格式
+                # - (batch_size, H, W, 3) - 另一种格式
+                # - (3, H, W) 或 (H, W, 3) - 单样本格式
+                if len(front_pc.shape) == 5:
+                    # (batch_size, timesteps, 3, H, W) 格式 - 时序数据
+                    batch_size, timesteps, channels, H, W = front_pc.shape
+                    print(f"  批次大小: {batch_size}, 时序步数: {timesteps}, 通道数: {channels}, 高度: {H}, 宽度: {W}")
+                    
+                    # 选择第一个样本和第一个时间步，并转换为 (H, W, 3) 格式
+                    pc_sample = front_pc[0, 0]  # (3, H, W) - 第一个batch，第一个时间步
+                    pc_sample = np.transpose(pc_sample, (1, 2, 0))  # (H, W, 3)
+                elif len(front_pc.shape) == 4:
+                    # (batch_size, 3, H, W) 或 (batch_size, H, W, 3) 格式
+                    batch_size = front_pc.shape[0]
+                    if front_pc.shape[1] == 3:
+                        # (batch_size, 3, H, W) 格式
+                        channels, H, W = front_pc.shape[1], front_pc.shape[2], front_pc.shape[3]
+                        print(f"  批次大小: {batch_size}, 通道数: {channels}, 高度: {H}, 宽度: {W}")
+                        
+                        # 选择第一个样本并转换为 (H, W, 3) 格式
+                        pc_sample = front_pc[0]  # (3, H, W)
+                        pc_sample = np.transpose(pc_sample, (1, 2, 0))  # (H, W, 3)
+                    else:
+                        # (batch_size, H, W, 3) 格式
+                        H, W, channels = front_pc.shape[1], front_pc.shape[2], front_pc.shape[3]
+                        print(f"  批次大小: {batch_size}, 高度: {H}, 宽度: {W}, 通道数: {channels}")
+                        
+                        # 选择第一个样本
+                        pc_sample = front_pc[0]  # (H, W, 3)
+                elif len(front_pc.shape) == 3:
+                    # 可能是 (3, H, W) 或 (H, W, 3)
+                    if front_pc.shape[0] == 3:
+                        # (3, H, W) 格式
+                        pc_sample = np.transpose(front_pc, (1, 2, 0))  # (H, W, 3)
+                    else:
+                        # (H, W, 3) 格式
+                        pc_sample = front_pc
+                else:
+                    print(f"  错误: 不支持的点云形状 {front_pc.shape}")
+                    pc_sample = None
+                
+                if pc_sample is not None:
+                    # 重塑为 (N, 3) 格式，其中 N = H * W
+                    H, W, _ = pc_sample.shape
+                    point_cloud = pc_sample.reshape(-1, 3)
+                    print(f"  重塑后点云形状: {point_cloud.shape}")
+                    
+                    # 移除无效点（包含 NaN 或 Inf 的点，以及全零的点）
+                    valid_mask = np.isfinite(point_cloud).all(axis=1)
+                    # 移除全零的点（通常表示无效的深度）
+                    zero_mask = ~np.all(point_cloud == 0, axis=1)
+                    valid_mask = valid_mask & zero_mask
+                    valid_mask = valid_mask & zero_mask
+                    point_cloud = point_cloud[valid_mask]
+                    print(f"  有效点数: {len(point_cloud)}")
+                    
+                    if len(point_cloud) > 0:
+                        # 如果点太多，进行下采样以提高可视化性能
+                        max_points = 50000
+                        if len(point_cloud) > max_points:
+                            indices = np.random.choice(len(point_cloud), max_points, replace=False)
+                            point_cloud = point_cloud[indices]
+                            print(f"  下采样到: {len(point_cloud)} 个点")
+                        
+                        # 提取 x, y, z 坐标
+                        x = point_cloud[:, 0]
+                        y = point_cloud[:, 1]
+                        z = point_cloud[:, 2]
+                        
+                        # 尝试从RGB图像采样颜色
+                        rgb_colors = None
+                        if 'front_rgb' in batch:
+                            try:
+                                front_rgb = batch['front_rgb']
+                                if isinstance(front_rgb, torch.Tensor):
+                                    front_rgb = front_rgb.cpu().numpy()
+                                
+                                # 选择第一个样本，处理多种形状格式
+                                if len(front_rgb.shape) == 5:
+                                    # (batch_size, timesteps, 3, H, W) 或 (batch_size, timesteps, H, W, 3)
+                                    if front_rgb.shape[2] == 3:
+                                        # (batch_size, timesteps, 3, H, W)
+                                        rgb_image = front_rgb[0, 0]  # (3, H, W) - 第一个batch，第一个时间步
+                                        rgb_image = np.transpose(rgb_image, (1, 2, 0))  # (H, W, 3)
+                                    else:
+                                        # (batch_size, timesteps, H, W, 3)
+                                        rgb_image = front_rgb[0, 0]  # (H, W, 3)
+                                elif len(front_rgb.shape) == 4:
+                                    # (batch_size, 3, H, W) 或 (batch_size, H, W, 3)
+                                    if front_rgb.shape[1] == 3:
+                                        rgb_image = front_rgb[0]  # (3, H, W)
+                                        rgb_image = np.transpose(rgb_image, (1, 2, 0))  # (H, W, 3)
+                                    else:
+                                        rgb_image = front_rgb[0]  # (H, W, 3)
+                                elif len(front_rgb.shape) == 3:
+                                    # (3, H, W) 或 (H, W, 3)
+                                    if front_rgb.shape[0] == 3:
+                                        rgb_image = np.transpose(front_rgb, (1, 2, 0))
+                                    else:
+                                        rgb_image = front_rgb
+                                else:
+                                    rgb_image = None
+                                
+                                if rgb_image is not None:
+                                    # 确保 RGB 值在 [0, 255] 范围内
+                                    if rgb_image.max() <= 1.0:
+                                        rgb_image = (rgb_image * 255).astype(np.uint8)
+                                    else:
+                                        rgb_image = rgb_image.astype(np.uint8)
+                                    
+                                    # 检查 RGB 图像和点云的尺寸是否匹配
+                                    img_h, img_w = rgb_image.shape[:2]
+                                    pc_h, pc_w = pc_sample.shape[:2]
+                                    
+                                    if img_h == pc_h and img_w == pc_w:
+                                        # 尺寸匹配，直接从对应位置采样颜色
+                                        # 将 RGB 图像重塑为 (H*W, 3)，然后应用相同的 valid_mask
+                                        rgb_flat = rgb_image.reshape(-1, 3)
+                                        rgb_colors = rgb_flat[valid_mask]
+                                        
+                                        # 确保颜色数量与点云数量匹配
+                                        if len(rgb_colors) == len(point_cloud):
+                                            # 转换为 Plotly 需要的 RGB 字符串格式 'rgb(r,g,b)'
+                                            rgb_strings = [f'rgb({r},{g},{b})' for r, g, b in rgb_colors]
+                                            print(f"  使用 RGB 颜色着色，成功采样 {len(rgb_colors)} 个点的颜色")
+                                        else:
+                                            print(f"  警告: RGB 颜色数量 ({len(rgb_colors)}) 与点云数量 ({len(point_cloud)}) 不匹配，使用 z 坐标颜色")
+                                            rgb_strings = None
+                                    else:
+                                        print(f"  警告: RGB 图像尺寸 ({img_h}, {img_w}) 与点云尺寸 ({pc_h}, {pc_w}) 不匹配，使用 z 坐标颜色")
+                                        rgb_strings = None
+                                else:
+                                    rgb_strings = None
+                            except Exception as e:
+                                print(f"  警告: 无法从 RGB 图像采样颜色: {e}")
+                                rgb_strings = None
+                        else:
+                            print("  未找到 front_rgb，使用 z 坐标颜色")
+                            rgb_strings = None
+                        
+                        # 创建 3D 散点图
+                        if rgb_strings is not None:
+                            # 使用 RGB 颜色
+                            fig = go.Figure(data=[go.Scatter3d(
+                                x=x,
+                                y=y,
+                                z=z,
+                                mode='markers',
+                                marker=dict(
+                                    size=1,
+                                    color=rgb_strings,  # 使用 RGB 颜色
+                                    opacity=0.8
+                                ),
+                                name='点云（RGB颜色）'
+                            )])
+                        else:
+                            # 使用 z 坐标颜色（回退方案）
+                            fig = go.Figure(data=[go.Scatter3d(
+                                x=x,
+                                y=y,
+                                z=z,
+                                mode='markers',
+                                marker=dict(
+                                    size=1,
+                                    color=z,  # 使用 z 坐标作为颜色
+                                    colorscale='Viridis',
+                                    opacity=0.8,
+                                    colorbar=dict(title="Z坐标")
+                                ),
+                                name='点云'
+                            )])
+                        
+                        # 设置图表布局
+                        title_suffix = "（RGB颜色）" if rgb_strings is not None else "（Z坐标颜色）"
+                        fig.update_layout(
+                            title=f'Replay Front Point Cloud{title_suffix}',
+                            scene=dict(
+                                xaxis_title='X (米)',
+                                yaxis_title='Y (米)',
+                                zaxis_title='Z (米)',
+                                aspectmode='data'  # 保持坐标轴比例
+                            ),
+                            width=1200,
+                            height=800
+                        )
+                        
+                        # 保存为 HTML 文件
+                        output_file = 'replay_front_point_cloud_visualization.html'
+                        fig.write_html(output_file)
+                        print(f"✓ 可视化已保存到: {output_file}")
+                    else:
+                        print("  警告: 没有有效的点云数据")
+                else:
+                    print("  警告: 无法处理点云数据")
+        except StopIteration:
+            print("  警告: 数据集为空，无法读取样本")
+        except Exception as e:
+            print(f"  错误: 读取和可视化 front_point_cloud 时出错: {e}")
+            import traceback
+            traceback.print_exc()
         
         # 打印测试完成信息
         print("\n" + "=" * 80)

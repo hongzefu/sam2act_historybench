@@ -88,21 +88,7 @@ def train(agent, dataset, training_iterations, log_iter, rank=0, node_rank=0, if
             for k, v in raw_batch.items()
             if type(v) == torch.Tensor
         }
-        #import pdb; pdb.set_trace()
-        
-        #fhz: 保存point cloud为npy文件
-        import numpy as np
-        cameras = ["front", "left_shoulder", "right_shoulder", "wrist"]
-        for cam in cameras:
-            key = f'{cam}_point_cloud'
-            if key in batch:
-                pc = batch[key][0, 0].cpu().numpy()  # 取第一个样本，第一个时间步 [3, 128, 128]
-                save_path = f'/home/hongzefu/pointcloud/{cam}_pointcloud_iter{iteration}.npy'
-                np.save(save_path, pc)
-                print(f"Saved {key} to {save_path}, shape: {pc.shape}")
 
-        import pdb; pdb.set_trace()
-         #fhz: 保存point cloud为npy文件
 
         batch["tasks"] = raw_batch["tasks"]
         batch["lang_goal"] = raw_batch["lang_goal"]
@@ -242,7 +228,7 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     # to match peract, iterations per epoch
     TRAINING_ITERATIONS = int(exp_cfg.train_iter // (exp_cfg.bs * world_size))
     EPOCHS = exp_cfg.epochs
-    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/test_buffer"
+    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
     TRAIN_REPLAY_STORAGE_DIR_MEM = "replay_temporal_memory/replay_train"
     # TEST_REPLAY_STORAGE_DIR = "replay/replay_val"
     log_dir = get_logdir(cmd_args, exp_cfg)
@@ -313,7 +299,8 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
             stage_two=mvt_cfg.stage_two,
             rot_ver=mvt_cfg.rot_ver,
             scene_bounds=SCENE_BOUNDS,
-            cameras=CAMERAS,
+            #cameras=CAMERAS,
+            cameras=["front", "wrist"],
             log_dir=f"{log_dir}/test_run/",
             cos_dec_max_step=EPOCHS * TRAINING_ITERATIONS,
             **exp_cfg.peract,
