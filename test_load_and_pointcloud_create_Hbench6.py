@@ -1558,7 +1558,7 @@ TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_
 # RLBench 原始数据集的根目录
 # 包含所有任务的演示数据，目录结构为：{DATA_FOLDER}/train/{task}/all_variations/episodes/
 # 如果使用 HDF5 文件，直接设置为 HDF5 文件路径
-DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/record_dataset_BinFill.h5"
+DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/dataset/rlbench-18-tasks/data"
 
 # ============================================================================
 # 数据集创建参数

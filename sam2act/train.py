@@ -204,7 +204,9 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     if cmd_args.exp_cfg_path != "":
         exp_cfg.merge_from_file(cmd_args.exp_cfg_path)
     if cmd_args.exp_cfg_opts != "":
-        exp_cfg.merge_from_list(cmd_args.exp_cfg_opts.split(" "))
+        # fhz change: strip whitespace and filter empty strings to fix type conversion issues
+        opts_list = [opt.strip() for opt in cmd_args.exp_cfg_opts.split(" ") if opt.strip()]
+        exp_cfg.merge_from_list(opts_list)
 
     if ddp:
         print(f"Running DDP on rank {rank}.")
@@ -242,7 +244,9 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     if cmd_args.mvt_cfg_path != "":
         mvt_cfg.merge_from_file(cmd_args.mvt_cfg_path)
     if cmd_args.mvt_cfg_opts != "":
-        mvt_cfg.merge_from_list(cmd_args.mvt_cfg_opts.split(" "))
+        # fhz change: strip whitespace and filter empty strings to fix type conversion issues
+        opts_list = [opt.strip() for opt in cmd_args.mvt_cfg_opts.split(" ") if opt.strip()]
+        mvt_cfg.merge_from_list(opts_list)
 
     mvt_cfg.feat_dim = get_num_feat(exp_cfg.peract)
     mvt_cfg.freeze()

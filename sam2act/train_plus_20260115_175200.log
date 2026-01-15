@@ -1,0 +1,85 @@
+W0115 17:52:01.828000 1849761 site-packages/torch/distributed/run.py:793] 
+W0115 17:52:01.828000 1849761 site-packages/torch/distributed/run.py:793] *****************************************
+W0115 17:52:01.828000 1849761 site-packages/torch/distributed/run.py:793] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0115 17:52:01.828000 1849761 site-packages/torch/distributed/run.py:793] *****************************************
+bin /home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda118.so
+bin /home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda118.so
+WARNING[XFORMERS]: xFormers can't load C++/CUDA extensions. xFormers was built for:
+    PyTorch 2.9.0+cu130 with CUDA 1300 (you have 2.5.1+cu121)
+    Python  3.10.19 (you have 3.10.19)
+  Please reinstall xformers (see https://github.com/facebookresearch/xformers#installing-xformers)
+  Memory-efficient attention, SwiGLU, sparse and more won't be available.
+  Set XFORMERS_MORE_DETAILS=1 for more details
+WARNING[XFORMERS]: xFormers can't load C++/CUDA extensions. xFormers was built for:
+    PyTorch 2.9.0+cu130 with CUDA 1300 (you have 2.5.1+cu121)
+    Python  3.10.19 (you have 3.10.19)
+  Please reinstall xformers (see https://github.com/facebookresearch/xformers#installing-xformers)
+  Memory-efficient attention, SwiGLU, sparse and more won't be available.
+  Set XFORMERS_MORE_DETAILS=1 for more details
+Running DDP on rank 0.
+dict(exp_cfg)={'agent': 'our', 'tasks': 'BinFill', 'exp_id': 'sam2act', 'resume': '', 'bs': 8, 'epochs': 10, 'num_workers': 5, 'sample_distribution_mode': 'task_uniform', 'train_iter': 80000, 'exp_name': 'test', 'demo': 100, 'wandb': True, 'peract': CfgNode({'lambda_weight_l2': 0.0001, 'lr': 0.0002, 'optimizer_type': 'lamb', 'warmup_steps': 2000, 'lr_cos_dec': True, 'add_rgc_loss': True, 'num_rotation_classes': 72, 'amp': True, 'bnb': True, 'transform_augmentation': True, 'transform_augmentation_xyz': [0.125, 0.125, 0.125], 'transform_augmentation_rpy': [0.0, 0.0, 45.0], 'same_trans_aug_per_seq': False}), 'rvt': CfgNode({'gt_hm_sigma': 1.5, 'img_aug': 0.0, 'place_with_mean': False, 'move_pc_in_bound': True}), 'peract_official': CfgNode({'cfg_path': 'configs/peract_official_config.yaml'})}
+Training on 1 tasks: ['BinFill']
+Running DDP on rank 1.
+Filling replay ...: BinFill
+Filling demo 0
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 437, in <module>
+[rank0]:     experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 279, in experiment
+[rank0]:     train_dataset, _ = get_dataset_func()
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 260, in <lambda>
+[rank0]:     get_dataset_func = lambda: get_dataset_temporal(
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/utils/get_dataset.py", line 225, in get_dataset_temporal
+[rank0]:     fill_replay_temporal(
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/utils/dataset.py", line 720, in fill_replay_temporal
+[rank0]:     demo = get_stored_demo(data_path=data_path, index=d_idx)
+[rank0]:   File "/home/hongzefu/sam2act/sam2act/libs/peract_colab/peract_colab/rlbench/utils.py", line 35, in get_stored_demo
+[rank0]:     with open(os.path.join(episode_path, LOW_DIM_PICKLE), 'rb') as f:
+[rank0]: FileNotFoundError: [Errno 2] No such file or directory: '/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer/train/BinFill/all_variations/episodes/episode0/low_dim_obs.pkl'
+Filling replay ...: BinFill
+Filling demo 0
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 437, in <module>
+[rank1]:     experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 279, in experiment
+[rank1]:     train_dataset, _ = get_dataset_func()
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/train.py", line 260, in <lambda>
+[rank1]:     get_dataset_func = lambda: get_dataset_temporal(
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/utils/get_dataset.py", line 225, in get_dataset_temporal
+[rank1]:     fill_replay_temporal(
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/utils/dataset.py", line 720, in fill_replay_temporal
+[rank1]:     demo = get_stored_demo(data_path=data_path, index=d_idx)
+[rank1]:   File "/home/hongzefu/sam2act/sam2act/libs/peract_colab/peract_colab/rlbench/utils.py", line 35, in get_stored_demo
+[rank1]:     with open(os.path.join(episode_path, LOW_DIM_PICKLE), 'rb') as f:
+[rank1]: FileNotFoundError: [Errno 2] No such file or directory: '/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer/train/BinFill/all_variations/episodes/episode0/low_dim_obs.pkl'
+W0115 17:52:11.661000 1849761 site-packages/torch/distributed/elastic/multiprocessing/api.py:897] Sending process 1849854 closing signal SIGTERM
+E0115 17:52:11.663000 1849761 site-packages/torch/distributed/elastic/multiprocessing/api.py:869] failed (exitcode: 1) local_rank: 0 (pid: 1849853) of binary: /home/hongzefu/micromamba/envs/sam2act_3/bin/python3.10
+Traceback (most recent call last):
+  File "/home/hongzefu/micromamba/envs/sam2act_3/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 355, in wrapper
+    return f(*args, **kwargs)
+  File "/home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/torch/distributed/run.py", line 919, in main
+    run(args)
+  File "/home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/torch/distributed/run.py", line 910, in run
+    elastic_launch(
+  File "/home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 138, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/hongzefu/micromamba/envs/sam2act_3/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 269, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+train.py FAILED
+------------------------------------------------------------
+Failures:
+  <NO_OTHER_FAILURES>
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-01-15_17:52:11
+  host      : sled-whistler
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1849853)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
