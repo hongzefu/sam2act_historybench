@@ -32,6 +32,7 @@ MANIFEST
 
 
 .vscode
+.cursor
 
 sam2act/data
 sam2act/data_colosseum
