@@ -22,6 +22,17 @@ import socket
 import argparse
 from typing import Any, Dict as DictType
 
+# ============================================================================
+# 路径配置：添加 sam2act 目录到 Python 路径
+# ============================================================================
+# 获取当前文件的绝对路径，然后获取 sam2act 目录
+# 当前文件位于 sam2act/historybench_eval/ 子目录下
+# 需要将 sam2act 目录添加到 sys.path 才能让 mvt 模块被正确导入
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+sam2act_dir = os.path.dirname(current_file_dir)  # 获取 sam2act 目录
+if sam2act_dir not in sys.path:
+    sys.path.insert(0, sam2act_dir)
+
 from sam2act.eval import load_agent
 
 # Flask imports for API service
@@ -292,7 +303,7 @@ if __name__ == "__main__":
     主程序入口 - 启动Flask服务，暴露agent.act为HTTP API
     
     使用示例：
-python sam2act/agent_api_server.py \
+python sam2act/historybench_eval/agent_api_server.py \
   --model_folder /home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2 \
   --model_name model_last.pth \
   --device 0 \
@@ -301,7 +312,7 @@ python sam2act/agent_api_server.py \
     """
     parser = argparse.ArgumentParser(description='SAM2ACT Agent Flask API服务')
     parser.add_argument('--model_folder', type=str, 
-                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill"),
+                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2"),
                        help='模型文件夹路径')
     parser.add_argument('--model_name', type=str,
                        default=os.getenv("MODEL_NAME", "model_last.pth"),

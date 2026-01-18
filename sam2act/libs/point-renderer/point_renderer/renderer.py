@@ -16,7 +16,8 @@ import point_renderer._C.render as r
 from point_renderer.profiler import PerfTimer
 
 
-@torch.jit.script
+# Removed @torch.jit.script decorator to avoid "Global alloc not supported yet" error
+# The function calls ops that use device-specific operations not supported in TorchScript
 def _prep_render_batch_inputs(points, features, inv_poses, intrinsics, img_h : int, img_w: int, orthographic : bool):
     batch_size = len(inv_poses)
     num_points = points.shape[0]

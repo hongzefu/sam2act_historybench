@@ -22,7 +22,20 @@ import socket
 import argparse
 from typing import Any, Dict as DictType
 
+# ============================================================================
+# 路径配置：添加 sam2act 目录到 Python 路径
+# ============================================================================
+# 获取当前文件的绝对路径，然后获取 sam2act 目录
+# 当前文件位于 sam2act/historybench_eval/ 子目录下
+# 需要将 sam2act 目录添加到 sys.path 才能让 mvt 模块被正确导入
+current_file_dir = os.path.dirname(os.path.abspath(__file__))
+sam2act_dir = os.path.dirname(current_file_dir)  # 获取 sam2act 目录
+if sam2act_dir not in sys.path:
+    sys.path.insert(0, sam2act_dir)
+
 from sam2act.eval import load_agent
+from rlbench.backend.observation import Observation
+import clip
 
 # Flask imports for API service
 try:
@@ -82,6 +95,139 @@ device_id = 0
 
 # 创建Flask应用
 app = Flask(__name__)
+
+
+def extract_obs(obs_dict: DictType[str, Any], curr_idx: int, lang_goal: str | None, 
+                episode_length: int = 25, time_in_state: bool = True):
+    """
+    从序列化的观察字典中提取特征字典
+    
+    Args:
+        obs_dict: 序列化的观察字典（从Observation对象转换而来）
+        curr_idx: 当前时间步索引
+        lang_goal: 语言目标描述字符串
+        episode_length: episode长度，默认25
+        time_in_state: 是否在状态中包含时间信息，默认True
+        
+    Returns:
+        obs_dict: 包含提取特征的字典，格式与agent.act所需格式一致
+    """
+    # 从字典重建Observation对象（简化版，只包含需要的字段）
+    obs = Observation(
+        left_shoulder_rgb=None, left_shoulder_depth=None, left_shoulder_mask=None, left_shoulder_point_cloud=None,
+        right_shoulder_rgb=None, right_shoulder_depth=None, right_shoulder_mask=None, right_shoulder_point_cloud=None,
+        overhead_rgb=None, overhead_depth=None, overhead_mask=None, overhead_point_cloud=None,
+        wrist_rgb=None, wrist_depth=None, wrist_mask=None, wrist_point_cloud=None,
+        front_rgb=None, front_depth=None, front_mask=None, front_point_cloud=None,
+        joint_velocities=None, joint_positions=None, joint_forces=None,
+        gripper_open=None, gripper_pose=None, gripper_matrix=None, gripper_joint_positions=None, gripper_touch_forces=None,
+        task_low_dim_state=None, ignore_collisions=None, misc=None
+    )
+    
+    # 从字典恢复Observation对象的属性
+    for key, val in obs_dict.items():
+        if hasattr(obs, key):
+            # 将列表转换回numpy数组
+            if isinstance(val, list):
+                val = np.array(val)
+            setattr(obs, key, val)
+    
+    # 确保misc存在
+    if 'misc' in obs_dict:
+        obs.misc = obs_dict['misc']
+    else:
+        obs.misc = {}
+    
+    # 备份需要恢复的值
+    grip_mat = obs.gripper_matrix
+    grip_pose = obs.gripper_pose
+    joint_pos = obs.joint_positions
+    
+    # 修改观察对象，移除不需要的属性
+    obs.joint_velocities = None
+    obs.gripper_pose = None
+    obs.gripper_matrix = None
+    obs.wrist_camera_matrix = None
+    obs.joint_positions = None
+    
+    # 限制夹爪关节位置在合理范围内 [0, 0.04]
+    if obs.gripper_joint_positions is not None:
+        obs.gripper_joint_positions = np.clip(
+            obs.gripper_joint_positions, 0., 0.04)
+    
+    # 提取观察特征
+    channels_last = False
+    obs_dict_extracted = vars(obs)
+    obs_dict_extracted = {k: v for k, v in obs_dict_extracted.items() if v is not None}
+    robot_state = obs.get_low_dim_data()
+    
+    # 移除机器人状态相关的键
+    ROBOT_STATE_KEYS = ['joint_velocities', 'joint_positions', 'joint_forces',
+                        'gripper_open', 'gripper_pose',
+                        'gripper_joint_positions', 'gripper_touch_forces',
+                        'task_low_dim_state', 'misc']
+    obs_dict_extracted = {k: v for k, v in obs_dict_extracted.items() if k not in ROBOT_STATE_KEYS}
+    
+    # 处理图像和深度数据的维度
+    if not channels_last:
+        new_obs_dict = {}
+        for k, v in obs_dict_extracted.items():
+            if isinstance(v, np.ndarray):
+                if v.ndim == 3:  # RGB图像或点云 (H, W, 3)
+                    new_obs_dict[k] = np.transpose(v, [2, 0, 1])
+                elif v.ndim == 2:  # 深度图 (H, W)
+                    new_obs_dict[k] = np.expand_dims(v, 0)
+                else:
+                    new_obs_dict[k] = np.expand_dims(v, 0) if v.ndim == 0 else v
+            else:
+                new_obs_dict[k] = v
+        obs_dict_extracted = new_obs_dict
+    else:
+        new_obs_dict = {}
+        for k, v in obs_dict_extracted.items():
+            if isinstance(v, np.ndarray):
+                if v.ndim == 2:
+                    new_obs_dict[k] = np.expand_dims(v, -1)
+                else:
+                    new_obs_dict[k] = v
+            else:
+                new_obs_dict[k] = v
+        obs_dict_extracted = new_obs_dict
+    
+    # 添加低维状态和碰撞忽略信息
+    obs_dict_extracted['low_dim_state'] = np.array(robot_state, dtype=np.float32)
+    obs_dict_extracted['ignore_collisions'] = np.array([obs.ignore_collisions], dtype=np.float32)
+    
+    # 确保点云数据为float32类型
+    for k, v in obs_dict_extracted.items():
+        if 'point_cloud' in k and isinstance(v, np.ndarray):
+            obs_dict_extracted[k] = v.astype(np.float32)
+    
+    # 添加相机内参和外参（从misc中读取）
+    camera_names = ['left_shoulder', 'right_shoulder', 'front', 'wrist', 'overhead']
+    for name in camera_names:
+        if '%s_camera_extrinsics' % name in obs.misc:
+            obs_dict_extracted['%s_camera_extrinsics' % name] = obs.misc['%s_camera_extrinsics' % name]
+        if '%s_camera_intrinsics' % name in obs.misc:
+            obs_dict_extracted['%s_camera_intrinsics' % name] = obs.misc['%s_camera_intrinsics' % name]
+    
+    # 添加时间状态信息
+    if time_in_state:
+        time = (1. - (curr_idx / float(episode_length - 1))) * 2. - 1.
+        obs_dict_extracted['low_dim_state'] = np.concatenate(
+            [obs_dict_extracted['low_dim_state'], [time]]).astype(np.float32)
+    
+    # 如果提供了语言目标，进行tokenize并添加到观察中
+    if lang_goal is not None:
+        tokens = clip.tokenize([lang_goal]).numpy()
+        obs_dict_extracted['lang_goal_tokens'] = tokens
+    
+    # 恢复观察对象的原始属性
+    obs.gripper_matrix = grip_mat
+    obs.joint_positions = joint_pos
+    obs.gripper_pose = grip_pose
+    
+    return obs_dict_extracted
 
 
 def initialize_agent(model_folder, model_name, device, exp_cfg_path=None, 
@@ -153,8 +299,9 @@ def act_endpoint():
     
     接收JSON格式的请求：
     {
-        "step": int,
-        "observation": dict,
+        "obs_obj": dict,  # 序列化的Observation对象字典
+        "curr_idx": int,  # 当前时间步索引
+        "lang_goal": str,  # 语言目标描述
         "deterministic": bool (可选，默认True)
     }
     
@@ -166,15 +313,10 @@ def act_endpoint():
         "message": str
     }
     
-    observation格式应该包含：
-    - low_dim_state: 低维状态数组
-    - {camera}_rgb: RGB图像 (C, H, W) 格式
-    - {camera}_depth: 深度图像 (1, H, W) 格式
-    - {camera}_point_cloud: 点云 (3, H, W) 格式
-    - {camera}_camera_extrinsics: 相机外参 (4, 4) 格式
-    - {camera}_camera_intrinsics: 相机内参 (3, 3) 格式
-    - lang_goal_tokens: 语言目标tokens (可选)
-    - ignore_collisions: 碰撞忽略标志
+    obs_obj格式应该包含Observation对象的所有属性（序列化为字典）：
+    - front_rgb, front_depth, front_point_cloud等
+    - gripper_open, gripper_joint_positions等
+    - misc字典（包含相机参数等）
     """
     global agent_instance, device_id
     
@@ -191,17 +333,21 @@ def act_endpoint():
                 "error": "Invalid JSON request"
             }), 400
         
-        step = data.get('step', 0)
-        observation = data.get('observation', {})
+        obs_obj = data.get('obs_obj', {})
+        curr_idx = data.get('curr_idx', 0)
+        lang_goal = data.get('lang_goal', None)
         deterministic = data.get('deterministic', True)
+        episode_length = data.get('episode_length', 25)
         
-        if not observation:
+        if not obs_obj:
             return jsonify({
-                "error": "Observation is required"
+                "error": "obs_obj is required"
             }), 400
         
+        # 调用extract_obs提取观察特征
+        observation = extract_obs(obs_obj, curr_idx, lang_goal, episode_length)
+        
         # 将observation字典转换为torch tensor格式
-        # 参考offline_eval_Hbench_api.py第720-728行的预处理逻辑
         prepped_data = {}
         
         for key, val in observation.items():
@@ -214,28 +360,24 @@ def act_endpoint():
             # 确保数据类型正确（避免float64导致的类型错误）
             if key == 'lang_goal_tokens':
                 # lang_goal_tokens应该是整数类型（int64）
-                # 如果从JSON反序列化后变成float，需要转换回int
                 if val.dtype in [np.float64, np.float32]:
                     val = val.astype(np.int64)
                 elif val.dtype not in [np.int64, np.int32]:
                     val = val.astype(np.int64)
             else:
-                # 其他数值数据（包括点云、相机参数等）都转换为float32
+                # 其他数值数据都转换为float32
                 if val.dtype == np.float64:
                     val = val.astype(np.float32)
                 elif val.dtype in [np.int64, np.int32, np.int16, np.int8]:
-                    # 整数类型转换为float32（除了lang_goal_tokens）
                     val = val.astype(np.float32)
             
             # 转换为tensor并移动到GPU
-            # 使用dtype参数确保tensor类型正确
             if key == 'lang_goal_tokens':
                 val_tensor = torch.tensor(np.array([val]), device=f"cuda:{device_id}", dtype=torch.long)
             else:
                 val_tensor = torch.tensor(np.array([val]), device=f"cuda:{device_id}", dtype=torch.float32)
             
             # 对于非语言token的观察，需要添加时间维度（unsqueeze）
-            # lang_goal_tokens已经是正确的形状，不需要unsqueeze
             if key != 'lang_goal_tokens':
                 val_tensor = val_tensor.unsqueeze(1)  # 添加时间维度
             
@@ -244,7 +386,7 @@ def act_endpoint():
         # 调用agent.act方法
         with torch.no_grad():
             act_result = agent_instance.act(
-                step, 
+                curr_idx, 
                 prepped_data, 
                 deterministic=deterministic
             )
@@ -265,7 +407,7 @@ def act_endpoint():
         
         return jsonify({
             "action": pred_action,
-            "step": step,
+            "step": curr_idx,
             "success": True,
             "message": "Action predicted successfully"
         })
@@ -292,7 +434,7 @@ if __name__ == "__main__":
     主程序入口 - 启动Flask服务，暴露agent.act为HTTP API
     
     使用示例：
-python sam2act/agent_api_server.py \
+python sam2act/historybench_eval/agent_api_server.py \
   --model_folder /home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2 \
   --model_name model_last.pth \
   --device 0 \
@@ -301,7 +443,7 @@ python sam2act/agent_api_server.py \
     """
     parser = argparse.ArgumentParser(description='SAM2ACT Agent Flask API服务')
     parser.add_argument('--model_folder', type=str, 
-                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill"),
+                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2"),
                        help='模型文件夹路径')
     parser.add_argument('--model_name', type=str,
                        default=os.getenv("MODEL_NAME", "model_last.pth"),

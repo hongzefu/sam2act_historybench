@@ -1,10 +1,12 @@
 """
-离线评估脚本
+离线评估脚本（仅支持HTTP API模式）
 
 本脚本用于对训练好的SAM2ACT模型进行离线评估，无需实际运行RLBench环境。
+本脚本仅支持通过HTTP API调用远程模型服务进行预测，不支持本地模型加载。
+
 主要功能包括：
 1. 从存储的演示数据中加载任务数据
-2. 使用训练好的agent模型对演示数据进行预测
+2. 通过HTTP API调用远程模型服务对演示数据进行预测
 3. 计算预测动作与真实动作之间的误差（平移误差、旋转误差、夹爪误差）
 4. 生成评估报告并保存为CSV文件
 
@@ -12,6 +14,18 @@
 - 快速评估模型性能，无需启动完整的RLBench环境
 - 批量评估多个任务
 - 分析模型在不同任务上的表现
+- 通过HTTP API在局域网中调用模型服务
+
+使用示例：
+1. 启动API服务：
+   python sam2act/historybench_eval/agent_api_server.py --model_folder /path/to/model --port 8000
+
+2. 运行离线评估：
+   python sam2act/historybench_eval/offline_eval_Hbench_apiv2.py \
+     --api_url http://localhost:8000 \
+     --eval-datafolder /path/to/data.h5 \
+     --tasks BinFill \
+     --eval-episodes 10
 """
 
 import os
@@ -20,7 +34,7 @@ import numpy as np
 import pickle
 import clip
 import csv
-from typing import List, Dict
+from typing import List, Dict, Optional, Any
 import argparse
 from scipy.spatial.transform import Rotation
 import h5py
@@ -29,19 +43,156 @@ import torch.nn.functional as F
 from pyrep.objects import VisionSensor
 from rlbench.backend.utils import image_to_float_array
 
+# HTTP client imports for API calls
+try:
+    import requests
+    REQUESTS_AVAILABLE = True
+except ImportError:
+    REQUESTS_AVAILABLE = False
+    print("警告: requests库未安装，无法使用HTTP API模式。请安装: pip install requests")
+
 from rlbench.backend.observation import Observation
 from rlbench.backend.utils import task_file_to_task_class
-from rlbench.utils import get_stored_demos
 import rlbench.backend.task as rlbench_task
 
 from yarr.utils.observation_type import ObservationElement
 from yarr.envs.rlbench_env import _extract_obs, _observation_elements
 
-from sam2act.eval import load_agent
 from sam2act.libs.peract.helpers import utils
 from sam2act.utils.peract_utils import CAMERAS, IMAGE_SIZE, SCENE_BOUNDS
 from sam2act.utils.rvt_utils import get_eval_parser, RLBENCH_TASKS
 
+
+# ============================================================================
+# HTTP API Client Functions
+# ============================================================================
+
+def serialize_observation(obs_dict: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    将观察字典中的numpy数组序列化为列表，以便通过JSON传输
+    
+    Args:
+        obs_dict: 包含观察数据的字典，可能包含numpy数组
+        
+    Returns:
+        序列化后的字典，所有numpy数组都转换为列表
+    """
+    serialized = {}
+    for key, val in obs_dict.items():
+        if isinstance(val, np.ndarray):
+            serialized[key] = val.tolist()
+        elif isinstance(val, torch.Tensor):
+            serialized[key] = val.cpu().numpy().tolist()
+        elif isinstance(val, (list, tuple)):
+            # 递归处理嵌套列表
+            serialized[key] = [x.tolist() if isinstance(x, (np.ndarray, torch.Tensor)) else x for x in val]
+        else:
+            serialized[key] = val
+    return serialized
+
+
+def call_agent_api(api_url: str, step: int, observation: Dict[str, Any], 
+                   deterministic: bool = True, timeout: float = 30.0,
+                   max_retries: int = 3) -> np.ndarray:
+    """
+    通过HTTP API调用agent.act方法
+    
+    Args:
+        api_url: API服务器地址（例如: http://localhost:8000）
+        step: 当前时间步
+        observation: 观察数据字典
+        deterministic: 是否使用确定性策略
+        timeout: 请求超时时间（秒）
+        max_retries: 最大重试次数
+        
+    Returns:
+        预测的动作数组 [x, y, z, qx, qy, qz, qw, grip, coll]
+        
+    Raises:
+        requests.RequestException: 如果API调用失败
+    """
+    if not REQUESTS_AVAILABLE:
+        raise ImportError("requests库未安装，无法使用HTTP API模式")
+    
+    # 类型检查：确保 requests 已导入
+    import requests  # type: ignore
+    
+    # 序列化观察数据
+    serialized_obs = serialize_observation(observation)
+    
+    # 准备请求数据
+    request_data = {
+        "step": step,
+        "observation": serialized_obs,
+        "deterministic": deterministic
+    }
+    
+    # 构建API端点URL
+    act_url = f"{api_url.rstrip('/')}/act"
+    
+    # 重试机制
+    last_exception = None
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(
+                act_url,
+                json=request_data,
+                timeout=timeout
+            )
+            response.raise_for_status()  # 如果状态码不是200，抛出异常
+            
+            result = response.json()
+            
+            if not result.get("success", False):
+                raise ValueError(f"API返回错误: {result.get('message', 'Unknown error')}")
+            
+            # 将返回的动作列表转换为numpy数组
+            action = np.array(result["action"], dtype=np.float32)
+            return action
+            
+        except requests.exceptions.RequestException as e:
+            last_exception = e
+            if attempt < max_retries - 1:
+                print(f"  API调用失败（尝试 {attempt + 1}/{max_retries}），正在重试...")
+                import time
+                time.sleep(0.5 * (attempt + 1))  # 指数退避
+            else:
+                print(f"  API调用失败，已重试 {max_retries} 次")
+                raise
+    
+    # 如果所有重试都失败，抛出最后一个异常
+    if last_exception:
+        raise last_exception
+
+
+def check_api_health(api_url: str, timeout: float = 5.0) -> bool:
+    """
+    检查API服务器健康状态
+    
+    Args:
+        api_url: API服务器地址
+        timeout: 请求超时时间（秒）
+        
+    Returns:
+        如果API服务器健康则返回True，否则返回False
+    """
+    if not REQUESTS_AVAILABLE:
+        return False
+    
+    try:
+        import requests  # type: ignore
+        health_url = f"{api_url.rstrip('/')}/health"
+        response = requests.get(health_url, timeout=timeout)
+        response.raise_for_status()
+        result = response.json()
+        return result.get("status") == "healthy"
+    except Exception:
+        return False
+
+
+# ============================================================================
+# Original Helper Functions
+# ============================================================================
 
 def convert_camera_matrix_maniskill_to_coppeliasim(
     extrinsics_opencv: np.ndarray,
@@ -230,7 +381,13 @@ def get_stored_demo_hdf5(data_path, index):
             
             if 'action' in ts_grp:
                 action = np.array(ts_grp['action'])
-                current_obs.gripper_open = float(action[-1])
+                # HDF5中：action[-1] = -1 表示关闭，1 表示打开
+                # 转换为标准格式：0.0 表示关闭，1.0 表示打开
+                grip_value = float(action[-1])
+                if grip_value < 0:  # -1 -> 0.0 (关闭)
+                    current_obs.gripper_open = 0.0
+                else:  # 1 -> 1.0 (打开)
+                    current_obs.gripper_open = 1.0
 
             if current_obs.gripper_open > 0:
                 current_obs.gripper_joint_positions = np.array([0.04, 0.04], dtype=np.float32)
@@ -574,44 +731,35 @@ def eval_offline(args):
     离线评估主函数
     
     对训练好的agent模型进行离线评估，使用存储的演示数据计算预测误差。
+    本函数仅支持通过HTTP API调用远程模型服务，不支持本地模型加载。
+    
     评估流程：
-    1. 加载训练好的agent模型
+    1. 检查API服务健康状态
     2. 为每个任务加载演示数据
-    3. 对每个演示的关键点进行预测
+    3. 对每个演示的关键点通过API进行预测
     4. 计算预测动作与真实动作的误差
     5. 聚合结果并保存为CSV文件
     
     Args:
         args: 命令行参数对象，包含以下关键属性：
-            - device: 使用的GPU设备编号
-            - model_folder: 模型文件夹路径
-            - model_name: 模型文件名
+            - api_url: API服务器地址（必需）
             - tasks: 要评估的任务列表
             - eval_datafolder: 评估数据文件夹路径
             - eval_episodes: 每个任务评估的episode数量
             - episode_length: 每个episode的长度
             - eval_log_dir: 评估日志保存目录
-            - 其他模型加载相关参数
     """
-    device = args.device
+    # 强制要求API URL参数
+    if not hasattr(args, 'api_url') or args.api_url is None or args.api_url.strip() == "":
+        raise ValueError("必须提供 --api_url 参数。本脚本仅支持API模式。")
     
-    # 加载训练好的agent模型
-    print(f"Loading agent from {args.model_folder}...")
-    agent = load_agent(
-        model_path=os.path.join(args.model_folder, args.model_name) if args.model_name else None,
-        peract_official=args.peract_official,
-        peract_model_dir=args.peract_model_dir,
-        exp_cfg_path=args.exp_cfg_path,
-        mvt_cfg_path=args.mvt_cfg_path,
-        eval_log_dir=args.eval_log_dir,
-        device=device,
-        use_input_place_with_mean=args.use_input_place_with_mean
-    )
-    # 将模型设置为评估模式（禁用dropout等训练时的操作）
-    agent.eval()
-    # 如果agent有load_clip方法，加载CLIP模型（用于语言理解）
-    if hasattr(agent, 'load_clip'):
-        agent.load_clip()
+    # 检查API服务健康状态
+    api_url = args.api_url.strip()
+    print(f"使用API模式，API地址: {api_url}")
+    print("检查API服务健康状态...")
+    if not check_api_health(api_url):
+        raise RuntimeError(f"API服务不可用: {api_url}。请确保API服务已启动。")
+    print("API服务健康检查通过！")
 
     # 创建观察配置
     # 定义相机分辨率（图像大小）
@@ -644,6 +792,7 @@ def eval_offline(args):
         # 初始化当前任务的详细记录列表
         detailed_records = []
         
+
         try:
             # Check if eval_datafolder is an HDF5 file
             if args.eval_datafolder.endswith('.h5'):
@@ -658,18 +807,9 @@ def eval_offline(args):
                     except Exception as e:
                         print(f"  Could not load episode {i} from HDF5: {e}")
             else:
-                # 从存储的数据中加载演示数据
-                # get_stored_demos会从指定路径加载RLBench任务的演示数据
-                demos = get_stored_demos(
-                    amount=args.eval_episodes,  # 加载的episode数量
-                    image_paths=False,  # 不返回图像路径，直接返回图像数据
-                    dataset_root=args.eval_datafolder,  # 数据集根目录
-                    variation_number=-1,  # -1表示加载所有variation
-                    task_name=task_name,  # 任务名称
-                    obs_config=obs_config,  # 观察配置
-                    random_selection=False,  # 不随机选择，按顺序加载
-                    from_episode_number=args.start_episode  # 起始episode编号
-                )
+                # 只支持HDF5文件格式
+                raise ValueError(f"不支持的数据格式: {args.eval_datafolder}。本脚本仅支持HDF5文件（.h5扩展名）")
+        
         except Exception as e:
             # 如果加载失败，打印错误信息并跳过该任务
             print(f"Failed to load demos for {task_name}: {e}")
@@ -693,13 +833,6 @@ def eval_offline(args):
             
             print(f"  Episode {i}: {len(keypoints)} keypoints, Goal: {lang_goal}")
             
-            # 如果agent使用了MVT（Multi-View Transformer）网络，重置记忆库
-            # 这确保每个episode开始时，agent的记忆是干净的
-            if hasattr(agent, '_network') and hasattr(agent._network, 'mvt1'):
-                 if hasattr(agent._network.mvt1, 'reset_memory_bank'):
-                    agent._network.mvt1.reset_memory_bank()
-                 if hasattr(agent._network.mvt2, 'reset_memory_bank'):
-                    agent._network.mvt2.reset_memory_bank()
 
             # 遍历关键点之间的转换
             # 对于每对相邻的关键点，使用当前关键点的观察预测下一个关键点的动作
@@ -715,36 +848,25 @@ def eval_offline(args):
                 # 传入当前时间步索引和语言目标
                 obs_dict = env_mock.extract_obs(obs_obj, curr_idx, lang_goal)
                 
-                # 准备批次数据（批次大小为1）
-                # 将numpy数组转换为torch tensor并移动到指定设备
-                prepped_data = {}
-                for key, val in obs_dict.items():
-                    # 将值转换为tensor并移动到GPU
-                    val = torch.tensor(np.array([val]), device=f"cuda:{device}")
-                    # 对于非语言token的观察，需要添加时间维度（unsqueeze）
-                    # lang_goal_tokens已经是正确的形状，不需要unsqueeze
-                    if key != 'lang_goal_tokens':
-                        val = val.unsqueeze(1)  # 添加时间维度
-                    prepped_data[key] = val
-                
-                # 使用agent进行动作预测
-                # step_signal通常用于epsilon-greedy或调度，这里传入关键点索引k
-                # 在eval.py中传入的是Value对象，这里传入整数
-                # deterministic=True表示使用确定性策略（不采样）
-                with torch.no_grad():  # 禁用梯度计算以节省内存和加速
-                    act_result = agent.act(k, prepped_data, deterministic=True)
-                
-                # 获取预测的动作
-                # 格式：[x, y, z, qx, qy, qz, qw, grip, coll]
-                # x,y,z: 位置；qx,qy,qz,qw: 旋转四元数；grip: 夹爪状态；coll: 碰撞标志
-                pred_action = act_result.action
+                # 通过HTTP API调用模型进行预测
+                try:
+                    pred_action = call_agent_api(
+                        api_url=api_url,
+                        step=k,
+                        observation=obs_dict,
+                        deterministic=True
+                    )
+                except Exception as e:
+                    print(f"  API调用失败: {e}")
+                    raise
                 
                 # 获取真实动作（ground truth）
                 gt_pose = target_obs_obj.gripper_pose  # 真实夹爪位姿 [x,y,z,qx,qy,qz,qw]
                 gt_open = target_obs_obj.gripper_open  # 真实夹爪状态（浮点数，0.0-1.0）
                 
                 # 将真实夹爪状态二值化，以便与预测的夹爪状态比较
-                # RLBench中：gripper_open 1.0表示打开，0.0表示关闭
+                # 注意：gripper_open 已经从HDF5的 -1/1 格式转换为 0.0/1.0 格式
+                # 0.0表示关闭，1.0表示打开
                 # PerAct中：action_grip_one_hot [closed, open]，argmax=0表示关闭，argmax=1表示打开
                 # 预测的pred_grip是0（关闭）或1（打开）
                 # 所以如果gt_open > 0.5，则认为是打开（1），否则是关闭（0）
@@ -854,22 +976,23 @@ if __name__ == "__main__":
     解析命令行参数，设置默认值，并调用离线评估函数。
     
     使用示例：
-        python sam2act/offline_eval.py \
-          --tasks open_drawer \
-          --model_folder /path/to/model \
-          --eval_datafolder /path/to/data \
-          --eval_episodes 10 \
-          --device 0
+        python sam2act/historybench_eval/offline_eval_Hbench_apiv2.py \
+          --api_url http://localhost:8000 \
+          --tasks BinFill \
+          --eval-datafolder /path/to/data.h5 \
+          --eval-episodes 10
     """
     # 获取评估参数解析器（从rvt_utils导入）
     parser = get_eval_parser()
+    
+    # 添加API相关参数（必需）
+    parser.add_argument('--api_url', type=str, default="http://localhost:8002",
+                       help='API服务器地址（例如: http://localhost:8000）。本脚本仅支持API模式')
     
     # 设置默认参数值
     # 这些默认值可以在命令行中被覆盖
     parser.set_defaults(
         tasks=["BinFill"],  # 默认评估任务
-        model_folder="/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill",  # 默认模型文件夹
-        model_name="model_last.pth",  # 默认模型文件名
         eval_datafolder="/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/record_dataset_BinFill.h5"  # 默认数据文件夹
     )
     # 解析命令行参数
@@ -879,20 +1002,34 @@ if __name__ == "__main__":
     if args.log_name is None:
         args.log_name = "offline_eval"
         
-    # 根据是否使用官方PerAct模型，设置评估日志目录
-    if not (args.peract_official):
-        # 使用SAM2ACT模型的目录结构
-        args.eval_log_dir = os.path.join(args.model_folder, "eval", args.log_name)
+    # 设置评估日志目录
+    # 如果用户提供了 model_folder，使用它；否则使用当前工作目录
+    if hasattr(args, 'model_folder') and args.model_folder:
+        if not (args.peract_official):
+            # 使用SAM2ACT模型的目录结构
+            args.eval_log_dir = os.path.join(args.model_folder, "eval", args.log_name)
+        else:
+            # 使用官方PerAct模型的目录结构
+            if hasattr(args, 'peract_model_dir') and args.peract_model_dir:
+                args.eval_log_dir = os.path.join(args.peract_model_dir, "eval", args.log_name)
+            else:
+                args.eval_log_dir = os.path.join(os.getcwd(), "eval", args.log_name)
     else:
-        # 使用官方PerAct模型的目录结构
-        args.eval_log_dir = os.path.join(args.peract_model_dir, "eval", args.log_name)
+        # 如果没有提供 model_folder，使用当前工作目录
+        args.eval_log_dir = os.path.join(os.getcwd(), "eval", args.log_name)
 
     # 执行离线评估
     eval_offline(args)
 
 
 # 使用示例（命令行）：
-# python sam2act/offline_eval_Hbench.py \
-#   --eval_datafolder /path/to/your/data.h5 \
-#   --tasks BinFill \
-#   --eval_episodes 10 \
+# 
+# 1. 启动API服务：
+#    python sam2act/historybench_eval/agent_api_server.py --model_folder /path/to/model --port 8000
+# 
+# 2. 运行离线评估：
+#    python sam2act/historybench_eval/offline_eval_Hbench_apiv2.py \
+#      --api_url http://localhost:8000 \
+#      --eval-datafolder /path/to/your/data.h5 \
+#      --tasks BinFill \
+#      --eval-episodes 10
