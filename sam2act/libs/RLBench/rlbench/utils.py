@@ -1,7 +1,7 @@
 import importlib
 import pickle
 from os import listdir
-from os.path import join, exists
+from os.path import join, exists, isdir
 from typing import List
 
 import numpy as np
@@ -54,13 +54,13 @@ def get_stored_demos(amount: int, image_paths: bool, dataset_root: str,
         examples_path = join(
             task_root, VARIATIONS_ALL_FOLDER,
             EPISODES_FOLDER)
-        examples = listdir(examples_path)
+        examples = [e for e in listdir(examples_path) if isdir(join(examples_path, e))]
     else:
         # Sample an amount of examples for the variation of this task
         examples_path = join(
             task_root, VARIATIONS_FOLDER % variation_number,
             EPISODES_FOLDER)
-        examples = listdir(examples_path)
+        examples = [e for e in listdir(examples_path) if isdir(join(examples_path, e))]
 
     if amount == -1:
         amount = len(examples)

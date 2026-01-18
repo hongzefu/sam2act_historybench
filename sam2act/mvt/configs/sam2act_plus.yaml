@@ -21,5 +21,5 @@ ifsep: False
 resize_rgb: True
 use_memory: True
 sam2_config: /configs/sam2.1/sam2.1_hiera_b+
-sam2_ckpt: ./mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt
+sam2_ckpt: ./sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt
 num_maskmem: 9

@@ -1182,37 +1182,58 @@ class SAM2Act_Agent:
 
         return return_out
 
-    @torch.no_grad()
+    @torch.no_grad()  # 推理时不计算梯度，节省内存并加速
     def act(
         self, step: int, observation: dict, deterministic=True, pred_distri=False
     ) -> ActResult:
+        """
+        执行动作推理方法，根据观察生成机器人动作
+        
+        Args:
+            step: 当前步数
+            observation: 观察字典，包含图像、点云、本体感觉等信息
+            deterministic: 是否使用确定性策略（默认True）
+            pred_distri: 是否返回预测分布（默认False）
+        
+        Returns:
+            ActResult: 包含连续动作的结果对象，如果pred_distri=True则额外返回旋转分布
+        """
+        # 处理语言目标嵌入
+        # 如果启用语言模态，使用CLIP编码语言目标token为嵌入向量
         if self.add_lang:
             lang_goal_tokens = observation.get("lang_goal_tokens", None).long()
             _, lang_goal_embs = _clip_encode_text(self.clip_model, lang_goal_tokens[0])
             lang_goal_embs = lang_goal_embs.float()
         else:
+            # 否则创建零向量作为占位符
             lang_goal_embs = (
                 torch.zeros(observation["lang_goal_embs"].shape)
                 .float()
                 .to(self._device)
             )
 
+        # 处理本体感觉信息（机械臂关节状态等低维状态）
         proprio = arm_utils.stack_on_channel(observation["low_dim_state"])
 
+        # 预处理观察数据：提取图像和点云
         obs, pcd = peract_utils._preprocess_inputs(observation, self.cameras)
+        # 从观察和点云中提取点云特征和图像特征
         pc, img_feat = rvt_utils.get_pc_img_feat(
             obs,
             pcd,
         )
 
+        # 将点云和图像特征移动到场景边界内
         pc, img_feat = rvt_utils.move_pc_in_bound(
             pc, img_feat, self.scene_bounds, no_op=not self.move_pc_in_bound
         )
 
+        # 将点云放置在标准立方体中（用于归一化）
         # TODO: Vectorize
         pc_new = []
-        rev_trans = []
+        rev_trans = []  # 存储反向变换，用于后续将预测结果转换回原始坐标系
         for _pc in pc:
+            # 将每个点云放置到立方体中，返回变换后的点云和反向变换函数
             a, b = mvt_utils.place_pc_in_cube(
                 _pc,
                 with_mean_or_bounds=self._place_with_mean,
@@ -1222,34 +1243,42 @@ class SAM2Act_Agent:
             rev_trans.append(b)
         pc = pc_new
 
-        bs = len(pc)
-        nc = self._net_mod.num_img
-        h = w = self._net_mod.img_size
-        dyn_cam_info = None
+        # 准备网络输入维度参数
+        bs = len(pc)  # 批次大小
+        nc = self._net_mod.num_img  # 相机数量
+        h = w = self._net_mod.img_size  # 图像高度和宽度
+        dyn_cam_info = None  # 动态相机信息（当前未使用）
 
+        # 网络前向传播：使用点云、图像特征、本体感觉和语言嵌入进行推理
         out = self._network(
             pc=pc,
             img_feat=img_feat,
             proprio=proprio,
             lang_emb=lang_goal_embs,
-            img_aug=0,  # no img augmentation while acting
+            img_aug=0,  # 推理时不进行图像增强
         )
+        # 从网络输出中提取Q值分布（旋转、抓取、碰撞等动作的离散化分布）
         _, rot_q, grip_q, collision_q, y_q, _ = self.get_q(
             out, dims=(bs, nc, h, w), only_pred=True, get_q_trans=False
         )
+        # 从Q值分布中提取预测的动作：路径点、旋转四元数、抓取状态、碰撞状态
         pred_wpt, pred_rot_quat, pred_grip, pred_coll = self.get_pred(
             out, rot_q, grip_q, collision_q, y_q, rev_trans, dyn_cam_info
         )
 
+        # 将预测的各个动作组成部分拼接成连续的动作向量
+        # 包含：路径点坐标(3维) + 旋转四元数(4维) + 抓取状态(1维) + 碰撞状态(1维)
         continuous_action = np.concatenate(
             (
-                pred_wpt[0].cpu().numpy(),
-                pred_rot_quat[0],
-                pred_grip[0].cpu().numpy(),
-                pred_coll[0].cpu().numpy(),
+                pred_wpt[0].cpu().numpy(),  # 路径点位置 (x, y, z)
+                pred_rot_quat[0],  # 旋转四元数 (w, x, y, z)
+                pred_grip[0].cpu().numpy(),  # 抓取状态 (开/关)
+                pred_coll[0].cpu().numpy(),  # 碰撞状态
             )
         )
+        # 如果需要返回预测分布（用于不确定性分析或可视化）
         if pred_distri:
+            # 提取X、Y、Z三个轴的旋转分布
             x_distri = rot_grip_q[
                 0,
                 0 * self._num_rotation_classes : 1 * self._num_rotation_classes,
@@ -1262,12 +1291,14 @@ class SAM2Act_Agent:
                 0,
                 2 * self._num_rotation_classes : 3 * self._num_rotation_classes,
             ]
+            # 返回动作结果和旋转分布
             return ActResult(continuous_action), (
                 x_distri.cpu().numpy(),
                 y_distri.cpu().numpy(),
                 z_distri.cpu().numpy(),
             )
         else:
+            # 正常情况下只返回动作结果
             return ActResult(continuous_action)
 
     def get_pred(

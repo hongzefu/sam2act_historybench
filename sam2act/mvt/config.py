@@ -56,7 +56,7 @@ _C.use_memory = False
 _C.num_maskmem = 7
 
 _C.sam2_config = '/configs/sam2.1/sam2.1_hiera_b+'
-_C.sam2_ckpt = './mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt'
+_C.sam2_ckpt = './sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt'
 
 def get_cfg_defaults():
     """Get a yacs CfgNode object with default values for my_project."""
