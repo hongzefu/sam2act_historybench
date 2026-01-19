@@ -32,6 +32,7 @@ import numpy as np
 import pickle
 import clip
 import csv
+import json
 from typing import List, Dict
 import argparse
 from scipy.spatial.transform import Rotation
@@ -689,26 +690,25 @@ def eval_offline(args):
             if args.eval_datafolder.endswith('.h5'):
                 print(f"Loading demos from HDF5 file: {args.eval_datafolder}")
                 demos = []
-                # Loop through episodes
-                start_ep = args.start_episode
-                for i in range(start_ep, start_ep + args.eval_episodes):
-                    try:
-                        demo = get_stored_demo_hdf5(args.eval_datafolder, i)
-                        demos.append(demo)
-                    except Exception as e:
-                        print(f"  Could not load episode {i} from HDF5: {e}")
+                # 只加载 episode 0
+                try:
+                    demo = get_stored_demo_hdf5(args.eval_datafolder, 0)
+                    demos.append(demo)
+                    print(f"  Loaded episode 0 from HDF5")
+                except Exception as e:
+                    print(f"  Could not load episode 0 from HDF5: {e}")
             else:
                 # 从存储的数据中加载演示数据
-                # get_stored_demos会从指定路径加载RLBench任务的演示数据
+                # 只加载 episode 0
                 demos = get_stored_demos(
-                    amount=args.eval_episodes,  # 加载的episode数量
+                    amount=1,  # 只加载1个episode
                     image_paths=False,  # 不返回图像路径，直接返回图像数据
                     dataset_root=args.eval_datafolder,  # 数据集根目录
                     variation_number=-1,  # -1表示加载所有variation
                     task_name=task_name,  # 任务名称
                     obs_config=obs_config,  # 观察配置
                     random_selection=False,  # 不随机选择，按顺序加载
-                    from_episode_number=args.start_episode  # 起始episode编号
+                    from_episode_number=0  # 从episode 0开始
                 )
         except Exception as e:
             # 如果加载失败，打印错误信息并跳过该任务
@@ -798,6 +798,14 @@ def eval_offline(args):
                 task_metrics["rot_err"].append(r_err)    # 旋转误差
                 task_metrics["grip_err"].append(g_err)   # 夹爪误差
                 
+                # 将 pred_action 转换为列表（如果是 numpy 数组或 torch tensor）
+                if isinstance(pred_action, torch.Tensor):
+                    pred_action_list = pred_action.cpu().numpy().tolist()
+                elif isinstance(pred_action, np.ndarray):
+                    pred_action_list = pred_action.tolist()
+                else:
+                    pred_action_list = list(pred_action)
+                
                 # 记录详细的预测动作、真实动作和误差信息
                 detailed_record = {
                     "task_name": task_name,
@@ -805,7 +813,9 @@ def eval_offline(args):
                     "keypoint_pair_idx": k,
                     "curr_keypoint_idx": int(curr_idx),
                     "next_keypoint_idx": int(next_idx),
-                    # 预测动作完整值
+                    # 预测动作完整数组
+                    "pred_action": pred_action_list,
+                    # 预测动作完整值（保留原有字段以兼容CSV）
                     "pred_x": float(pred_action[0]),
                     "pred_y": float(pred_action[1]),
                     "pred_z": float(pred_action[2]),
@@ -871,7 +881,7 @@ def eval_offline(args):
         # 保存详细记录到CSV文件
         if len(all_detailed_records) > 0:
             detailed_csv_path = os.path.join(args.eval_log_dir, "detailed_eval_results.csv")
-            # 定义CSV列名
+            # 定义CSV列名（不包含 pred_action，因为它是数组）
             fieldnames = [
                 "task_name", "episode_idx", "keypoint_pair_idx", 
                 "curr_keypoint_idx", "next_keypoint_idx",
@@ -880,12 +890,30 @@ def eval_offline(args):
                 "trans_err", "rot_err", "grip_err"
             ]
             
-            # 写入详细记录CSV文件
+            # 写入详细记录CSV文件（只写入非数组字段）
+            csv_records = []
+            for record in all_detailed_records:
+                csv_record = {k: v for k, v in record.items() if k != "pred_action"}
+                csv_records.append(csv_record)
+            
             with open(detailed_csv_path, "w", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerows(all_detailed_records)
+                writer.writerows(csv_records)
             print(f"Detailed results saved to {detailed_csv_path} ({len(all_detailed_records)} records)")
+            
+            # 保存包含完整 pred_action 数组的 JSON 文件
+            # 过滤掉分解的 pred_x, pred_y 等字段，只保留 pred_action 数组
+            json_records = []
+            fields_to_remove = ["pred_x", "pred_y", "pred_z", "pred_qx", "pred_qy", "pred_qz", "pred_qw", "pred_grip"]
+            for record in all_detailed_records:
+                json_record = {k: v for k, v in record.items() if k not in fields_to_remove}
+                json_records.append(json_record)
+            
+            json_path = os.path.join(args.eval_log_dir, "pred_actions.json")
+            with open(json_path, "w") as f:
+                json.dump(json_records, f, indent=2)
+            print(f"Prediction actions with full arrays saved to {json_path}")
 
 if __name__ == "__main__":
     """

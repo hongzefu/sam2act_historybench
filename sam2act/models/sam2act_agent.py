@@ -1266,7 +1266,7 @@ class SAM2Act_Agent:
 
         #可视化点云
         # 使用 plotly 可视化处理后的点云
-        self._visualize_pointcloud_to_html(pc, "推理前点云", step)
+        #self._visualize_pointcloud_to_html(pc, "推理前点云", step)
 
         # 网络前向传播：使用点云、图像特征、本体感觉和语言嵌入进行推理
         out = self._network(

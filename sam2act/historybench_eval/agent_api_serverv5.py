@@ -214,16 +214,18 @@ def extract_obs(obs_dict: DictType[str, Any], curr_idx: int, lang_goal: str | No
         gripper_quat = np.array(obs_dict['robot_endeffector_q']).flatten()
         obs.gripper_pose = np.concatenate([gripper_pos, gripper_quat])
 
-    if 'action' in obs_dict:
-        action = np.array(obs_dict['action'])
-        obs.gripper_open = float((action[-1] + 1) / 2)
+    # if 'action' in obs_dict:
+    #     action = np.array(obs_dict['action'])
+    #     obs.gripper_open = float((action[-1] + 1) / 2)
         
-    # 设置 gripper_joint_positions (如果没有直接提供)
-    if obs.gripper_joint_positions is None and obs.gripper_open is not None:
-        if obs.gripper_open > 0:
-            obs.gripper_joint_positions = np.array([0.04, 0.04], dtype=np.float32)
-        else:
-            obs.gripper_joint_positions = np.array([0.0, 0.0], dtype=np.float32)
+    # # 设置 gripper_joint_positions (如果没有直接提供)
+    # if obs.gripper_joint_positions is None and obs.gripper_open is not None:
+    #     if obs.gripper_open > 0:
+    #         obs.gripper_joint_positions = np.array([0.04, 0.04], dtype=np.float32)
+    #     else:
+    #         obs.gripper_joint_positions = np.array([0.0, 0.0], dtype=np.float32)
+
+
             
     if obs.ignore_collisions is None:
         obs.ignore_collisions = 0
@@ -292,10 +294,7 @@ def extract_obs(obs_dict: DictType[str, Any], curr_idx: int, lang_goal: str | No
     obs.wrist_camera_matrix = None
     obs.joint_positions = None
     
-    # 限制夹爪关节位置在合理范围内 [0, 0.04]
-    if obs.gripper_joint_positions is not None:
-        obs.gripper_joint_positions = np.clip(
-            obs.gripper_joint_positions, 0., 0.04)
+
     
     # 提取观察特征
     channels_last = False
@@ -360,10 +359,16 @@ def extract_obs(obs_dict: DictType[str, Any], curr_idx: int, lang_goal: str | No
     # - 如果 time_in_state=False: [gripper_open, left_finger_joint, right_finger_joint]
     # 类型: np.ndarray, dtype=np.float32
 
-    gripper_open_val = obs.gripper_open if obs.gripper_open is not None else 1.0
+   
     left_finger = obs.gripper_joint_positions[0] if obs.gripper_joint_positions is not None else 0.0
     right_finger = obs.gripper_joint_positions[1] if obs.gripper_joint_positions is not None else 0.0
+
+    if left_finger <=0.035 or right_finger <=0.035:
+        gripper_open_val = 0  ####必须严格设置只要小了一点就是close
+    else:
+        gripper_open_val =  1
     
+    print(f"current gripper_open: {'open' if gripper_open_val ==1 else 'close'}")
     if time_in_state:
         time = (1. - (curr_idx / float(episode_length - 1))) * 2. - 1.
         obs_dict_extracted['low_dim_state'] = np.array(
