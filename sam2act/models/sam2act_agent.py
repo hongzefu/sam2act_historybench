@@ -1249,6 +1249,8 @@ class SAM2Act_Agent:
         h = w = self._net_mod.img_size  # 图像高度和宽度
         dyn_cam_info = None  # 动态相机信息（当前未使用）
 
+        print("proprio: ", proprio)
+
         # 网络前向传播：使用点云、图像特征、本体感觉和语言嵌入进行推理
         out = self._network(
             pc=pc,

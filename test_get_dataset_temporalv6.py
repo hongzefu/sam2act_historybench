@@ -955,13 +955,13 @@ def get_dataset_temporal(
 
 def main():
     # 配置参数
-    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/buffer_memorybench/"
-    DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/dataset_memorybench/data/"
+    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
+    DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/dataset/rlbench-18-tasks/data"
     TEST_REPLAY_STORAGE_DIR = None
-    tasks = ["reopen_drawer"]       # 测试的任务
+    tasks = ["close_jar"]       # 测试的任务
     BATCH_SIZE_TRAIN = 4        # 训练 Batch 大小
     BATCH_SIZE_TEST = None
-    NUM_TRAIN = 100              # 使用的演示数量
+    NUM_TRAIN = 1             # 使用的演示数量
     NUM_VAL = None
     refresh_replay = True       # 是否重新生成 Replay Buffer
     device = "cuda:0" if torch.cuda.is_available() else "cpu"

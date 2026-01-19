@@ -713,6 +713,8 @@ def _get_action(
     
     # 提取抓取器的开合状态（True/False -> 1.0/0.0）
     grip = float(obs_tp1.gripper_open)
+
+    print("grip: ", grip)
     
     # 将抓取器状态添加到旋转索引列表的末尾
     # 最终列表长度为 4：[rot_x_idx, rot_y_idx, rot_z_idx, grip_idx]

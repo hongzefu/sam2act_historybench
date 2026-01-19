@@ -421,8 +421,8 @@ if __name__ == "__main__":
     # 这些默认值可以在命令行中被覆盖
     parser.set_defaults(
         tasks=["close_jar"],  # 默认评估任务
-        model_folder="/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_rlbench",  # 默认模型文件夹
-        model_name="model_89.pth",  # 默认模型文件名
+        model_folder="/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_closejar",  # 默认模型文件夹
+        model_name="model_last.pth",  # 默认模型文件名
         eval_datafolder="/nfs/turbo/coe-chaijy-unreplicated/datasets/sam2act/dataset/rlbench-18-tasks/data/train"  # 默认数据文件夹
     )
     # 解析命令行参数
