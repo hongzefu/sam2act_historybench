@@ -799,7 +799,20 @@ class SAM2Act_Agent:
             )
             
             # 保存为HTML文件
-            output_file = os.path.join(output_dir, f'pc_step{step_num}_{step_name.replace(" ", "_")}.html')
+            base_filename = f'pc_step{step_num}_{step_name.replace(" ", "_")}.html'
+            output_file = os.path.join(output_dir, base_filename)
+            
+            # 如果文件已存在，在文件名后递增数字
+            if os.path.exists(output_file):
+                name_without_ext, ext = os.path.splitext(base_filename)
+                counter = 1
+                while True:
+                    new_filename = f'{name_without_ext}{counter}{ext}'
+                    output_file = os.path.join(output_dir, new_filename)
+                    if not os.path.exists(output_file):
+                        break
+                    counter += 1
+            
             fig.write_html(output_file)
             print(f"✓ 点云可视化已保存: {output_file} (共{num_plots}个点云)")
             
@@ -1250,6 +1263,10 @@ class SAM2Act_Agent:
         dyn_cam_info = None  # 动态相机信息（当前未使用）
 
         print("proprio: ", proprio)
+
+        #可视化点云
+        # 使用 plotly 可视化处理后的点云
+        self._visualize_pointcloud_to_html(pc, "推理前点云", step)
 
         # 网络前向传播：使用点云、图像特征、本体感觉和语言嵌入进行推理
         out = self._network(

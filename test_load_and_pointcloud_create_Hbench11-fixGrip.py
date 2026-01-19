@@ -388,7 +388,11 @@ def get_stored_demo(data_path, index):
                 
                 if 'action' in ts_grp:
                     action = np.array(ts_grp['action'])
-                    current_obs.gripper_open = float(action[-1])
+                    # 映射action[-1]到gripper_open:
+                    # action[-1] = -1 表示关闭夹爪 -> gripper_open = 0 (关闭)
+                    # action[-1] = 1 表示打开夹爪 -> gripper_open = 1 (打开)
+                    # 使用公式 (action[-1] + 1) / 2 进行映射: -1 -> 0, 1 -> 1
+                    current_obs.gripper_open = float((action[-1] + 1) / 2)
 
                 
                 # 设置 gripper_joint_positions（左右手指关节位置）
@@ -714,7 +718,7 @@ def _get_action(
     # 提取抓取器的开合状态（True/False -> 1.0/0.0）
     grip = float(obs_tp1.gripper_open)
 
-    print("grip: ", grip)
+
     
     # 将抓取器状态添加到旋转索引列表的末尾
     # 最终列表长度为 4：[rot_x_idx, rot_y_idx, rot_z_idx, grip_idx]
@@ -1642,7 +1646,7 @@ BATCH_SIZE_TEST = None      # 测试集的批次大小，如果 only_train=True 
 TEST_REPLAY_STORAGE_DIR = None
 
 # 演示数量配置
-NUM_TRAIN = 10   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
+NUM_TRAIN = 50   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
 NUM_VAL = None   # 每个任务使用的验证演示数量，如果 only_train=True 可以设为 None
 
 # 数据刷新标志

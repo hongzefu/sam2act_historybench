@@ -216,7 +216,7 @@ def extract_obs(obs_dict: DictType[str, Any], curr_idx: int, lang_goal: str | No
 
     if 'action' in obs_dict:
         action = np.array(obs_dict['action'])
-        obs.gripper_open = float(action[-1])
+        obs.gripper_open = float((action[-1] + 1) / 2)
         
     # 设置 gripper_joint_positions (如果没有直接提供)
     if obs.gripper_joint_positions is None and obs.gripper_open is not None:
@@ -605,7 +605,7 @@ python sam2act/historybench_eval/agent_api_server.py \
     """
     parser = argparse.ArgumentParser(description='SAM2ACT Agent Flask API服务')
     parser.add_argument('--model_folder', type=str, 
-                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2"),
+                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_test"),
                        help='模型文件夹路径')
     parser.add_argument('--model_name', type=str,
                        default=os.getenv("MODEL_NAME", "model_last.pth"),
