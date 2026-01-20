@@ -600,7 +600,12 @@ if __name__ == "__main__":
     """
     主程序入口 - 启动Flask服务，暴露agent.act为HTTP API
     
-
+    使用示例：
+python sam2act/historybench_eval/agent_api_server.py \
+  --model_folder /home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill2 \
+  --model_name model_last.pth \
+  --device 0 \
+  --port 8002
 
     """
     parser = argparse.ArgumentParser(description='SAM2ACT Agent Flask API服务')
