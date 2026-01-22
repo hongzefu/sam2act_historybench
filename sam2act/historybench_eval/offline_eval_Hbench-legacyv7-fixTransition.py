@@ -745,6 +745,92 @@ def eval_offline(args):
                     agent._network.mvt2.reset_memory_bank()
 
             # 遍历关键点之间的转换
+            # 首先评估从初始状态（frame 0）到第一个关键点的转换（对应 replay buffer 中 keypoint_frame=-1 的情况）
+            if len(keypoints) > 0:
+                # 评估从初始状态到第一个关键点
+                curr_idx = 0  # 初始状态（frame 0）
+                next_idx = keypoints[0]  # 第一个关键点
+                
+                # 获取当前和目标的观察对象
+                obs_obj = demo[curr_idx]           # 初始状态的观察
+                target_obs_obj = demo[next_idx]   # 第一个关键点的观察（用于计算真实动作）
+                
+                # 从当前观察中提取特征字典
+                obs_dict = env_mock.extract_obs(obs_obj, curr_idx, lang_goal, episode_length=len(demo))
+                
+                # 准备批次数据
+                prepped_data = {}
+                for key, val in obs_dict.items():
+                    val = torch.tensor(np.array([val]), device=f"cuda:{device}")
+                    if key != 'lang_goal_tokens':
+                        val = val.unsqueeze(1)
+                    prepped_data[key] = val
+                
+                # 使用agent进行动作预测（keypoint_idx=-1 表示这是第一个关键点，对应 keypoint_frame=-1）
+                with torch.no_grad():
+                    act_result = agent.act(-1, prepped_data, deterministic=True)
+                
+                pred_action = act_result.action
+                gt_pose = target_obs_obj.gripper_pose
+                gt_open = target_obs_obj.gripper_open
+                gt_open_int = 1 if gt_open > 0.5 else 0
+                
+                # 计算误差
+                t_err, r_err, g_err = calculate_metrics(pred_action, gt_pose, gt_open_int)
+                task_metrics["trans_err"].append(t_err)
+                task_metrics["rot_err"].append(r_err)
+                task_metrics["grip_err"].append(g_err)
+                
+                # 记录详细信息
+                if isinstance(pred_action, torch.Tensor):
+                    pred_action_list = pred_action.cpu().numpy().tolist()
+                elif isinstance(pred_action, np.ndarray):
+                    pred_action_list = pred_action.tolist()
+                else:
+                    pred_action_list = list(pred_action)
+                
+                gt_action_list = [
+                    float(gt_pose[0]),
+                    float(gt_pose[1]),
+                    float(gt_pose[2]),
+                    float(gt_pose[3]),
+                    float(gt_pose[4]),
+                    float(gt_pose[5]),
+                    float(gt_pose[6]),
+                    float(gt_open_int)
+                ]
+                
+                detailed_record = {
+                    "task_name": task_name,
+                    "episode_idx": i,
+                    "keypoint_pair_idx": -1,  # -1 表示这是从初始状态到第一个关键点（对应 keypoint_frame=-1）
+                    "curr_keypoint_idx": int(curr_idx),
+                    "next_keypoint_idx": int(next_idx),
+                    "pred_action": pred_action_list,
+                    "gt_action": gt_action_list,
+                    "pred_x": float(pred_action[0]),
+                    "pred_y": float(pred_action[1]),
+                    "pred_z": float(pred_action[2]),
+                    "pred_qx": float(pred_action[3]),
+                    "pred_qy": float(pred_action[4]),
+                    "pred_qz": float(pred_action[5]),
+                    "pred_qw": float(pred_action[6]),
+                    "pred_grip": float(pred_action[7]),
+                    "gt_x": float(gt_pose[0]),
+                    "gt_y": float(gt_pose[1]),
+                    "gt_z": float(gt_pose[2]),
+                    "gt_qx": float(gt_pose[3]),
+                    "gt_qy": float(gt_pose[4]),
+                    "gt_qz": float(gt_pose[5]),
+                    "gt_qw": float(gt_pose[6]),
+                    "gt_grip": float(gt_open_int),
+                    "trans_err": float(t_err),
+                    "rot_err": float(r_err),
+                    "grip_err": float(g_err)
+                }
+                detailed_records.append(detailed_record)
+            
+            # 然后评估相邻关键点之间的转换
             # 对于每对相邻的关键点，使用当前关键点的观察预测下一个关键点的动作
             for k in range(len(keypoints) - 1):
                 curr_idx = keypoints[k]      # 当前关键点的索引
@@ -948,13 +1034,13 @@ if __name__ == "__main__":
     # 设置默认参数值
     # 这些默认值可以在命令行中被覆盖
     parser.set_defaults(
-        tasks=["BinFill"],  # 默认评估任务
+        tasks=["RouteStick"],  # 默认评估任务
         model_folder="/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_test",  # 默认模型文件夹
         model_name="model_last.pth",  # 默认模型文件名
-        eval_datafolder="/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/record_dataset_BinFill.h5"  # 默认数据文件夹
+        eval_datafolder="/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/record_dataset_RouteStick.h5"  # 默认数据文件夹
     )
     # 解析命令行参数
-    args = parser.parse_args()
+    args = parser.parse_args() 
     
     # 如果未指定日志名称，使用默认值
     if args.log_name is None:

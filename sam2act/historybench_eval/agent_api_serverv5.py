@@ -605,10 +605,10 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser(description='SAM2ACT Agent Flask API服务')
     parser.add_argument('--model_folder', type=str, 
-                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_test"),
+                       default=os.getenv("MODEL_FOLDER", "/home/hongzefu/sam2act_historybench/sam2act/runs/sam2act_plus_binfill_v1"),
                        help='模型文件夹路径')
     parser.add_argument('--model_name', type=str,
-                       default=os.getenv("MODEL_NAME", "model_last.pth"),
+                       default=os.getenv("MODEL_NAME", "model_plus_last.pth"),
                        help='模型文件名')
     parser.add_argument('--device', type=int,
                        default=int(os.getenv("DEVICE", "0")),

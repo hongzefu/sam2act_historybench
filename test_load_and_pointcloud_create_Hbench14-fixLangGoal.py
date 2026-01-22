@@ -956,7 +956,7 @@ def _add_keypoints_to_replay_temporal(
             CAMERAS,               # 相机列表（使用全局常量）
             t=k - next_keypoint_idx,  # 时间步偏移量
             prev_action=prev_action,  # 前一个动作（用于时序建模）
-            episode_length=25,     # 演示的最大长度（用于时间归一化）
+            episode_length=40,     # 演示的最大长度（用于时间归一化）
         )
         
         # ====================================================================
@@ -1053,7 +1053,7 @@ def _add_keypoints_to_replay_temporal(
             CAMERAS,                           # 相机列表
             t=k + 1 - next_keypoint_idx,       # 时间步（比最后一个关键点多 1）
             prev_action=prev_action,           # 最后一个动作
-            episode_length=25,                 # 演示长度
+            episode_length=40,                 # 演示长度
         )
         
         # 添加语言嵌入（使用之前计算的嵌入）
@@ -1205,42 +1205,39 @@ def fill_replay_temporal(
                 if hasattr(demo, 'setup_language_goal') and demo.setup_language_goal is not None:
                     descs = [demo.setup_language_goal]
                 else:
-                    # 如果未找到，尝试直接从 HDF5 文件读取（作为备用方案）
+                    # 从 HDF5 文件的 episode/setup 组中读取 language_goal
                     try:
                         with h5py.File(data_path, 'r') as f:
                             env_name = list(f.keys())[0]
                             episode_name = f'episode_{d_idx}'
                             if episode_name in f[env_name]:
                                 ep_grp = f[env_name][episode_name]
-                                if 'setup_language_goal' in ep_grp:
-                                    lang_goal_val = ep_grp['setup_language_goal'][()]
-                                    if isinstance(lang_goal_val, bytes):
-                                        lang_goal_val = lang_goal_val.decode('utf-8')
-                                    elif isinstance(lang_goal_val, np.ndarray):
-                                        if lang_goal_val.dtype == object or lang_goal_val.dtype.type == np.str_:
-                                            lang_goal_val = str(lang_goal_val.item())
-                                        else:
-                                            lang_goal_val = lang_goal_val.tobytes().decode('utf-8').strip('\x00')
-                                    descs = [lang_goal_val]
-                                elif 'language_goal' in ep_grp:
-                                    lang_goal_val = ep_grp['language_goal'][()]
-                                    if isinstance(lang_goal_val, bytes):
-                                        lang_goal_val = lang_goal_val.decode('utf-8')
-                                    elif isinstance(lang_goal_val, np.ndarray):
-                                        if lang_goal_val.dtype == object or lang_goal_val.dtype.type == np.str_:
-                                            lang_goal_val = str(lang_goal_val.item())
-                                        else:
-                                            lang_goal_val = lang_goal_val.tobytes().decode('utf-8').strip('\x00')
-                                    descs = [lang_goal_val]
+                                
+                                # 只从 episode 的 setup 子组中读取
+                                if 'setup' in ep_grp:
+                                    setup_grp = ep_grp['setup']
+                                    if 'language goal' in setup_grp:
+                                        lang_goal_val = setup_grp['language goal'][()]
+                                        if isinstance(lang_goal_val, bytes):
+                                            lang_goal_val = lang_goal_val.decode('utf-8')
+                                        elif isinstance(lang_goal_val, np.ndarray):
+                                            if lang_goal_val.dtype == object or lang_goal_val.dtype.type == np.str_:
+                                                lang_goal_val = str(lang_goal_val.item())
+                                            else:
+                                                lang_goal_val = lang_goal_val.tobytes().decode('utf-8').strip('\x00')
+                                        descs = [lang_goal_val]
+                                  
+                                    else:
+                                        # 如果 setup 组中找不到，抛出异常
+                                        raise ValueError(f"无法从 HDF5 文件读取 setup_language_goal: episode {d_idx} 的 setup 组中未找到 language_goal 或 setup_language_goal 字段")
                                 else:
-                                    # 如果都找不到，使用默认任务描述
-                                    descs = [f"{task} task"]
+                                    # 如果找不到 setup 组，抛出异常
+                                    raise ValueError(f"无法从 HDF5 文件读取 setup_language_goal: episode {d_idx} 中未找到 setup 组")
                             else:
-                                descs = [f"{task} task"]
+                                raise ValueError(f"无法从 HDF5 文件读取 setup_language_goal: episode {d_idx} 不存在")
                     except Exception as e:
-                        # 如果读取失败，使用默认任务描述
-                        print(f"警告: 无法从 HDF5 文件读取 setup_language_goal，使用默认描述: {e}")
-                        descs = [f"{task} task"]
+                        # 如果读取失败，重新抛出异常
+                        raise ValueError(f"无法从 HDF5 文件读取 setup_language_goal: episode {d_idx}, 错误: {e}") from e
             else:
                 # 对于标准的 RLBench 数据结构，从 pickle 文件中加载任务描述
                 # 构建任务变体描述文件的路径
@@ -1290,8 +1287,10 @@ def fill_replay_temporal(
                 obs = demo[i]
                 
                 # 获取任务描述（使用第一个变体的描述）
-                # 确保 desc 是字符串类型
-                desc = str(descs[0]) if descs and descs[0] is not None else f"{task} task"
+                # 确保 desc 是字符串类型，如果为空或 None 则抛出异常
+                if not descs or descs[0] is None:
+                    raise ValueError(f"任务描述为空或 None: task={task}, episode={d_idx}")
+                desc = str(descs[0])
                 
                 # ============================================================
                 # 步骤 2.5: 更新关键点索引
@@ -1636,13 +1635,13 @@ def get_dataset_temporal(
 # ============================================================================
 # 训练集 replay buffer 的存储目录
 # replay buffer 处理后的数据会保存在此目录下，每个任务有独立的子目录
-TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
+TRAIN_REPLAY_STORAGE_DIR = "/home/hongzefu/sam2act_historybench/dataset_generate/sam2act/test_buffer"
 
 # RLBench 原始数据集的根目录
 # 包含所有任务的演示数据，目录结构为：{DATA_FOLDER}/train/{task}/all_variations/episodes/
 # 如果使用 HDF5 文件，设置为数据文件的目录路径（不包含文件名）
 # 代码会根据任务名称自动构建对应的数据文件路径：{DATA_FOLDER}/record_dataset_{task}.h5
-DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate"
+DATA_FOLDER = "/home/hongzefu/sam2act_historybench/dataset_generate"
 
 # ============================================================================
 # 数据集创建参数
@@ -1650,8 +1649,28 @@ DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate"
 # 任务列表：要处理的任务名称列表
 # 可以包含多个任务，例如：["close_jar", "open_drawer", "pick_and_lift_simple"]
 # 对于 HDF5 文件，任务名称可以自定义（用于 replay buffer 存储目录的组织）
-#tasks = ["BinFill","VideoUnmask","VideoPlaceOrder","RouteStick"]
-tasks = ["RouteStick"]   # 当前使用 HDF5 数据，任务名称自定义
+tasks = [
+"PickXtimes",
+"StopCube",
+"SwingXtimes",
+"BinFill",
+
+"VideoUnmaskSwap",
+"VideoUnmask",
+"ButtonUnmaskSwap",
+"ButtonUnmask",
+
+"VideoRepick",
+ "VideoPlaceButton",
+"VideoPlaceOrder",
+"PickHighlight",
+
+"InsertPeg",
+'MoveCube',
+"PatternLock",
+"RouteStick"
+        ]
+#tasks = ["RouteStick"]   # 当前使用 HDF5 数据，任务名称自定义
 
 # 批次大小配置
 BATCH_SIZE_TRAIN = 8        # 训练集的批次大小，影响 replay buffer 的采样批量
@@ -1661,7 +1680,7 @@ BATCH_SIZE_TEST = None      # 测试集的批次大小，如果 only_train=True 
 TEST_REPLAY_STORAGE_DIR = None
 
 # 演示数量配置
-NUM_TRAIN = 2   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
+NUM_TRAIN = 100   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
 NUM_VAL = None   # 每个任务使用的验证演示数量，如果 only_train=True 可以设为 None
 
 # 数据刷新标志

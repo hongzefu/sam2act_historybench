@@ -1650,8 +1650,28 @@ DATA_FOLDER = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate"
 # 任务列表：要处理的任务名称列表
 # 可以包含多个任务，例如：["close_jar", "open_drawer", "pick_and_lift_simple"]
 # 对于 HDF5 文件，任务名称可以自定义（用于 replay buffer 存储目录的组织）
-#tasks = ["BinFill","VideoUnmask","VideoPlaceOrder","RouteStick"]
-tasks = ["RouteStick"]   # 当前使用 HDF5 数据，任务名称自定义
+tasks = [
+"PickXtimes",
+"StopCube",
+"SwingXtimes",
+"BinFill",
+
+"VideoUnmaskSwap",
+"VideoUnmask",
+"ButtonUnmaskSwap",
+"ButtonUnmask",
+
+"VideoRepick",
+ "VideoPlaceButton",
+"VideoPlaceOrder",
+"PickHighlight",
+
+"InsertPeg",
+'MoveCube',
+"PatternLock",
+"RouteStick"
+        ]
+#tasks = ["RouteStick"]   # 当前使用 HDF5 数据，任务名称自定义
 
 # 批次大小配置
 BATCH_SIZE_TRAIN = 8        # 训练集的批次大小，影响 replay buffer 的采样批量
@@ -1661,7 +1681,7 @@ BATCH_SIZE_TEST = None      # 测试集的批次大小，如果 only_train=True 
 TEST_REPLAY_STORAGE_DIR = None
 
 # 演示数量配置
-NUM_TRAIN = 2   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
+NUM_TRAIN = 100   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
 NUM_VAL = None   # 每个任务使用的验证演示数量，如果 only_train=True 可以设为 None
 
 # 数据刷新标志
