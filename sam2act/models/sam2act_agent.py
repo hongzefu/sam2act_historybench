@@ -1215,6 +1215,7 @@ class SAM2Act_Agent:
         # 如果启用语言模态，使用CLIP编码语言目标token为嵌入向量
         if self.add_lang:
             lang_goal_tokens = observation.get("lang_goal_tokens", None).long()
+            print("model add language!")
             _, lang_goal_embs = _clip_encode_text(self.clip_model, lang_goal_tokens[0])
             lang_goal_embs = lang_goal_embs.float()
         else:
