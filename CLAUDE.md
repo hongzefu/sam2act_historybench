@@ -1,116 +1,116 @@
 # CLAUDE.md — SAM2Act / SAM2Act+ 评测指南
 
-> 本文件只讲**评测（HistoryBench 仿真）**：评测链路是什么、**现在还缺哪些文件**、最新模型在哪、补齐后怎么跑。
+> 本文件只讲**评测（HistoryBench 仿真）**：硬性约定、评测链路、推理环境怎么建、最新模型在哪、怎么跑。
 > 训练、RLBench 原始评测等不在此文档范围内。
 
 ---
 
-## 1. 评测链路（三方拓扑）
+## 0. 硬性约定（务必遵守）
 
-一次 HistoryBench 评测由**三部分**组成，分别在不同位置：
+- **必须用中文和用户沟通。** 所有回复、解释、总结一律用中文。
+- **推理环境必须用 `uv` 管理**（`uv lock` + `uv sync`，见第 3 节），不要用 `pip install` / `conda` 临时往环境里塞包。依赖锁在 `pyproject.toml` + `uv.lock`，要改依赖就改 `pyproject.toml` 后重新 `uv lock`。
+- 仿真/客户端那一侧用现成的 micromamba 环境 `maniskillenv1028`（这一侧不归 uv 管，别动）。
+
+---
+
+## 1. 评测链路（三方拓扑，现已全在 sled-vail 本地）
+
+一次 HistoryBench 评测由**三部分**组成：
 
 | 角色 | 位置 | 职责 |
 | --- | --- | --- |
-| **模型 / 权重** | 本仓库 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench`（`sam2act/runs/`） | 存放 SAM2Act / SAM2Act+ 的 checkpoint 和模型代码 |
-| **仿真 + 评测客户端** | `/data/hongzefu/robomme-sam2act` | ManiSkill 3.0 + 16 个 HistoryBench 任务；评测脚本是 **HTTP 客户端** |
-| **推理服务（远程）** | `http://141.212.48.176:<port>` | 加载 checkpoint，暴露 `POST /reset_memory` 和 `POST /act` |
+| **模型 / 权重 + 推理服务** | 本仓库 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench`，用 repo 的 **uv `.venv`** 跑 | 加载 checkpoint，暴露 `POST /reset_memory` + `POST /act`（Flask，默认 :8001） |
+| **仿真 + 评测客户端** | `/data/hongzefu/robomme-sam2act`，用 micromamba `maniskillenv1028` 跑 | ManiSkill 3 + 16 个 HistoryBench 任务；评测脚本是 **HTTP 客户端** |
 
-数据流：评测客户端读数据集 → 在 ManiSkill 里复现 episode → 把每步观测 POST 给推理服务的 `/act` → 拿到动作并执行 → 统计成功率。
+数据流：客户端读数据集 → 在 ManiSkill 里复现 episode → 每步观测 POST 给 `/act` → 拿动作执行 → 统计成功率。
 
----
-
-## 2. ⚠ 评测现在还缺什么（跑不起来的根因）
-
-> 以下是当前文件系统的真实状况。**三项都需补齐，评测才能跑通。**
-
-### ✗ 缺口 1：推理服务端代码（最关键）
-- **期望**：模型主机 `141.212.48.176` 上有一个 HTTP 服务，定义 `/reset_memory`（重置记忆）和 `/act`（收观测、返回动作）两个路由，并加载某个 checkpoint。
-- **实际（已全盘扫描确认）**：对 `/data/hongzefu/` 与 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/` 下所有 `*.py` / `*.ipynb`（含 cursor 编辑历史）做穷尽扫描——共 **2845** 个含 Web 服务框架的文件，与「SAM2Act 推理 token（`load_agent` / `reset_memory_bank` / `SAM2Act_Agent` / `sam2act_agent`）＋ HTTP 路由 token」取交集，**命中 0 个**。所有出现 `/reset_memory`、`/act` 的文件都是**客户端**评测脚本（含 `/data/hongzefu/legacy/` 下的多份历史备份）。⇒ **服务端代码确实不在这两处磁盘上**，只存在于 `141.212.48.176` 本地，**未纳入版本控制**。
-- **需要补**：一个把 agent 包成 HTTP 服务的脚本。仓库内现成的集成点是 `sam2act/real/sam2act_agent.py`：
-  - `SAM2Act.__init__(model_path)` → `load_agent(model_path)`（`model_path` 含 `_plus_` 时自动加载 `*_plus.yaml` 配置）
-  - `SAM2Act.get_action(step, observation)` → `agent.act(...)`
-  - 用 Flask/FastAPI 暴露：`POST /reset_memory` 调 `agent._network.mvt*.reset_memory_bank()`，`POST /act` 调 `get_action(...)`。
-  - **可直接套用的最小模板**：`/data/hongzefu/EvalAI-Starters-minigrid/mock_agent.py`（FastAPI + `@app.post("/act")` + `uvicorn.run(..., port=...)`，路由结构完全同构；把其中返回随机动作的部分换成 `SAM2Act.get_action(...)`，再补一个 `@app.post("/reset_memory")` 即可）。
-  - **建议把这个服务端脚本提交进仓库**，否则评测无法复现。
-
-### ✗ 缺口 2：评测用 conda/micromamba 环境失效
-- **期望（脚本写死）**：`/data/hongzefu/maniskillenv1114`
-- **实际**：该路径**不存在**。当前实际存在的 maniskill 环境只有 `/home/hongzefu/micromamba/envs/maniskillenv1028`（另有 `.../robomme`、`.../sam2act-1`）。
-  - ⚠ 注意：`run_oraclev4.sh` 引用的 `/home/hongzefu/micromamba/envs/maniskillenv1228` **同样不存在**——又一处失效引用。
-- **需要补**：把评测脚本里的 `/data/hongzefu/maniskillenv1114` 改成现存的 `maniskillenv1028`，或按其依赖重建 `maniskillenv1114`。涉及文件：`scripts/eval_sam2actV8.3multiprocess_manager.sh`、`public_scripts/run_evaluate_dataset_replay_parallel.sh` 中的 `CONDA_ENV` / `MICROMAMBA_ENV`。
-
-### ✗ 缺口 3：评测数据集缺失 / 改名
-- **期望（脚本写死）**：`/data/hongzefu/historybench-v5.7.6-sam2act7-full-dataset2-annotate/dataset_json`，每个任务一个 `record_dataset_{env_id}_metadata.json`
-- **实际**：该目录**不存在**；`/data/hongzefu` 下只有 `dataset-distribution-0329`、`dataset_replay-0306`、`dataset-test-tokendrop` 等其它数据集。
-- **需要补**：补回该标注数据集，或把 `eval_sam2actV8.3multiprocess.py` / `eval_sam2actV9-sample.py` 里的 `dataset_root` 指向现存且含 `record_dataset_*_metadata.json` 的数据集。
-
-### ⚠ 顺带的小问题
-- `historybench/HistoryBench_env/RouteStick copy.py` 与 `RouteStick.py` **都 `@register_env("RouteStick")`**，是重复注册的冗余拷贝，建议删掉 `RouteStick copy.py` 以免 import 时冲突。
+> ⚠ 历史背景：CLAUDE.md 旧版说推理服务在远程 `141.212.48.176`、环境 `sam2act4`。那台主机/那个环境**已不存在**；推理服务端代码（`sam2act/historybench_eval/agent_api_serverv7.*.py`）其实**已在仓库里**。现在服务端和客户端**都在本机 sled-vail（141.212.115.116，2× RTX 6000 Ada）跑**。
 
 ---
 
-## 3. 最新模型 checkpoint 在哪
+## 2. 最新模型 checkpoint 在哪
 
 均在本仓库 `sam2act/runs/` 下。
 
 ### SAM2Act+（带记忆，`use_memory: True`，`model_plus_*.pth`，约 610MB）
-| 路径 | 时间 | 说明 |
-| --- | --- | --- |
-| `sam2act/runs/sam2act_plus_all_v4/model_plus_last.pth` | 2026-01-28 | **推荐**：10 epoch 完整 run（`model_plus_0..9`） |
-| `sam2act/runs/sam2act_plus_all_v5/model_plus_last.pth` | 2026-01-29 | 时间最新，但只训到 epoch 3（`model_plus_0..3`），**未训完** |
-| `sam2act/runs/sam2act_plus_binfill_v3/model_plus_last.pth` | 2026-01-23 | BinFill 单任务专项 |
+| 路径 | 说明 |
+| --- | --- |
+| `sam2act/runs/sam2act_plus_all_v4/model_plus_last.pth` | **推荐**：10 epoch 完整 run |
+| `sam2act/runs/sam2act_plus_all_v5/model_plus_last.pth` | 时间最新，但只训到 epoch 3，**未训完** |
+| `sam2act/runs/sam2act_plus_binfill_v3/model_plus_last.pth` | BinFill 单任务专项 |
 
 ### SAM2Act（基础，`use_memory: False`，`model_*.pth`，约 1.2GB）
-| 路径 | 时间 | 说明 |
-| --- | --- | --- |
-| `sam2act/runs/sam2act_all_v1/model_last.pth` | 2026-01-24 | 最新基础模型（plus 各目录里的 `model_last.pth` 是它的副本，作训练初始化） |
+| 路径 | 说明 |
+| --- | --- |
+| `sam2act/runs/sam2act_all_v1/model_last.pth` | 最新基础模型 |
 
-### SAM2 底座权重
-- `sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt`
-
-> 注：`sam2act/runs/legacy-directRun/` 下是更早的实验 run，已被上面的版本取代。
+> `load_agent` 用 `model_path` 是否含 `_plus_` 自动选配置：含 `_plus_` → 用同目录 `exp_cfg_plus.yaml` / `mvt_cfg_plus.yaml`；否则用 `exp_cfg.yaml` / `mvt_cfg.yaml`。
+> SAM2 底座权重：`sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt`。
 
 ---
 
-## 4. 评测怎么跑（补齐第 2 节缺口后）
+## 3. 建推理环境（uv，仅推理）
 
-### Step 1 — 在模型主机 `141.212.48.176` 起推理服务
-> ⚠ 该服务端脚本目前**不在仓库里**（见缺口 1）。补齐后大致形如：
+环境定义在 `pyproject.toml` + `uv.lock`：**纯推理依赖**，torch 2.5.1+cu121 / py3.10，**不含** tensorflow/rlbench/pyrep/pytorch3d 等训练-仿真栈。
+
+仓库 `sam2act` 源码**保持原样**（不打 import 守卫）。推理适配只放在 venv 内的挂件文件里：
+- `.venv/.../site-packages/_sam2act_stubs.py`：meta-path shim，把训练/仿真依赖伪装成 dummy、屏蔽 `torch.utils.tensorboard`，并注入推理**真正要用**的 `Observation` + `VisionSensor.pointcloud_from_depth_and_camera_params`。
+- `_sam2act_stubs.pth` / `_sam2act_paths.pth`：启动时加载 shim，并把 repo 根、内置 `YARR`/`peract_colab`/`point-renderer`、`sam2act` 目录加进 `sys.path`。
+
+这些挂件 `uv sync` **不会自动生成**（`.venv` 被 gitignore）。一条命令搞定（含 `uv sync` + 装挂件 + 校验）：
+
 ```bash
-# 伪命令：用所选 checkpoint 起服务，暴露 /reset_memory + /act
-# 评 SAM2Act+ → 指向 model_plus_*.pth（路径含 _plus_，会自动用 plus 配置）
-# 评 SAM2Act  → 指向 model_*.pth
-python <推理服务脚本> \
-    --model-path .../sam2act/runs/sam2act_plus_all_v4/model_plus_last.pth \
-    --port 8001
-```
-集成逻辑参考 `sam2act/real/sam2act_agent.py`。
-
-### Step 2 — 在 sim 主机激活环境后跑评测客户端
-工作目录 `/data/hongzefu/robomme-sam2act`，先激活可用环境（见缺口 2）。
-
-**并行批量评测（推荐，nohup 后台 + 日志监控）：**
-```bash
-# 管理器支持 start | monitor | stop | status | restart，日志在 scripts/logs/
-bash scripts/eval_sam2actV8.3multiprocess_manager.sh start
-# 等价于内部运行（默认值）：
-#   python eval_sam2actV8.3multiprocess.py \
-#     --base_url http://141.212.48.176 --start_port 8001 --num_ports 8 \
-#     --max_steps 40 --max_episodes_per_env 10
+bash sam2act/historybench_eval/infer_env/setup_venv.sh
 ```
 
-**单进程 / 抽样评测：**
+跑完应打印 `OK: from sam2act.eval import load_agent`。（挂件源码与该脚本是 git-tracked 的，所以可复现。）
+
+---
+
+## 4. 怎么跑评测
+
+### Step 1 — 起推理服务（本机，repo 目录，用 `.venv`）
+
 ```bash
-python scripts/eval_sam2actV9-sample.py --api_url http://141.212.48.176:8001 --max_steps 40
+cd /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench
+CUDA_VISIBLE_DEVICES=1 .venv/bin/python \
+  sam2act/historybench_eval/agent_api_serverv7.5clearMem-parallel2gpu-seed.py \
+  --num_servers 1 --device 0 --port 8001 \
+  --model_folder "$PWD/sam2act/runs/sam2act_plus_all_v4" \
+  --model_name model_plus_last.pth
+# 评基础 SAM2Act → --model_folder .../sam2act_all_v1 --model_name model_last.pth
 ```
+
+- ⚠ **GPU 写法必须如此**：`CUDA_VISIBLE_DEVICES=<空闲GPU>` + `--device 0`。CLIP 默认落在 `cuda:0`，若用 `--device 1` 之类会在 `/act` 报 `cuda:0 vs cuda:1` 设备冲突。先用 `nvidia-smi` 挑一张空闲卡。
+- 就绪判据：`curl -s http://127.0.0.1:8001/health` 返回 `{"message":"Agent is ready",...}`（模型加载约 15s）。
+- 后台跑：`setsid nohup CUDA_VISIBLE_DEVICES=1 .venv/bin/python <上面那串> > /tmp/sam2act_server.log 2>&1 < /dev/null &`，停止用 `kill <PID>`。
+  - 注意别用 `pkill -f agent_api_serverv7.5...`：模式会匹配到你自己的命令行，把当前 shell 也杀了。按 PID 杀。
+
+### Step 2 — 跑评测客户端（sim 侧，`maniskillenv1028`）
+
+```bash
+cd /data/hongzefu/robomme-sam2act
+/home/hongzefu/micromamba/envs/maniskillenv1028/bin/python scripts/eval_binfill_test_client.py \
+  --api_url http://127.0.0.1:8001 \
+  --env_id BinFill --split test \
+  --env_metadata_root /data/hongzefu/robomme-sam2act/env_metadata \
+  --max_episodes 10 --max_steps 40
+```
+
+- 数据集：`/data/hongzefu/robomme-sam2act/env_metadata/{test,train,val}/record_dataset_{env_id}_metadata.json`（每条含 `seed`、`difficulty`）。
+- `--max_episodes 0` = 全部；结果写到 `scripts/results/<env>_<split>_<时间戳>.json`（逐条增量写）。
+- ⚠ **128×128 必须项**：HistoryBench 相机默认渲染 256×256，但 SAM2Act 要 `IMAGE_SIZE=128`。客户端已在 `gym.make` 传 `sensor_configs=dict(width=128,height=128)`；少了它 `/act` 会报点云/mask 形状不匹配（131072 vs 32768）。新写客户端务必保留这一项。
 
 ### Step 3 — 评测语义
-1. 从 `dataset_root/record_dataset_{env_id}_metadata.json` 读取每个 episode（含 `seed`、难度）。
-2. 先回放**历史 / 演示段**（视频演示），让模型积累记忆。
-3. 再用 `/act` 逐步查询策略执行**评测段**，直到 episode 结束。
-4. 统计每任务成功率。
+1. 从 metadata 读每个 episode。
+2. `env.reset()` 内部自动跑完**演示段**，返回稠密轨迹；客户端 `POST /reset_memory` 清记忆，再把采样的演示帧喂给 `/act` 让模型积累记忆。
+3. 评测段：逐步 `raw obs → /act → ee 位姿动作 → 运动规划器执行`，直到 success / fail / max_steps。
+4. 统计每任务成功率（总体 + 按难度）。
 
-> **SAM2Act 与 SAM2Act+ 用的是同一套客户端脚本**，区别只在「推理服务加载了哪个 checkpoint / 监听哪个端口」。要同时评两个模型 → 起两个服务（不同端口）或换 checkpoint 重启服务。
+> SAM2Act 与 SAM2Act+ 共用同一套客户端，区别只在服务端加载了哪个 checkpoint。同时评两个 → 起两个服务（不同端口/不同空闲 GPU）。
+
+### 已验证基线
+`sam2act_plus_all_v4/model_plus_last.pth` 在 **BinFill test 10 episodes = 4/10（easy 3/6, medium 1/2, hard 0/2）**。
 
 ### 16 个 HistoryBench 任务
 `PickXtimes, StopCube, SwingXtimes, BinFill, VideoUnmaskSwap, VideoUnmask, ButtonUnmaskSwap, ButtonUnmask, VideoRepick, VideoPlaceButton, VideoPlaceOrder, PickHighlight, InsertPeg, MoveCube, PatternLock, RouteStick`

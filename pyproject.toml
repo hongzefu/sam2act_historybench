@@ -1,0 +1,49 @@
+[project]
+name = "sam2act-infer"
+version = "0.0.1"
+description = "Inference-only environment for the SAM2Act / SAM2Act+ HistoryBench HTTP eval server"
+requires-python = ">=3.10,<3.11"
+
+# Curated *inference-only* dependency set. Deliberately excludes the training /
+# RLBench-sim stack (tensorflow, rlbench, pyrep/CoppeliaSim, pytorch3d, pyrender).
+# Those appear only in top-level imports of training-time modules and are guarded
+# out so the agent can be loaded and served for forward passes alone.
+dependencies = [
+    "torch==2.5.1",
+    "torchvision==0.20.1",
+    "numpy>=1.24,<2",
+    "scipy",
+    "einops",
+    "omegaconf",
+    "hydra-core==1.3.2",
+    "iopath",
+    "yacs",
+    "matplotlib",
+    "transforms3d",
+    "pyquaternion",
+    "natsort",
+    "bitsandbytes>=0.43",
+    "opencv-python-headless",
+    "pyyaml",
+    "ftfy",
+    "regex",
+    "flask",
+    "clip",
+]
+
+[tool.uv]
+# Virtual project: do NOT build/install this repo's own package via the lock.
+# sam2act (and the vendored yarr / peract_colab) are layered in afterwards with
+# `uv pip install --no-deps -e` so their stale install_requires (tensorflow,
+# hydra-core==1.0.5, pyrender, ...) never poison this inference lock.
+package = false
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121" }
+torchvision = { index = "pytorch-cu121" }
+clip = { git = "https://github.com/openai/CLIP.git" }
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
