@@ -43,7 +43,7 @@ nohup bash -c "
     stdbuf -oL -eL torchrun --nproc_per_node=\\\"2\\\" --nnodes=\\\"1\\\" train.py \\
       --exp_cfg_path configs/sam2act.yaml \\
       --mvt_cfg_path mvt/configs/sam2act.yaml \\
-      --exp_cfg_opts \\\"tasks close_jar train_iter 80000 epochs 10 demo 100\\\" \\
+      --exp_cfg_opts \\\"tasks close_jar train_iter 16000 epochs 10 demo 100\\\" \\
       --mvt_cfg_opts \\\"depth 4\\\"
   \"
 " > "$LOG_FILE" 2>&1 &

@@ -54,3 +54,5 @@ sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_small.pt
 sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_tiny.pt
 
 sam2act/scripts.sh
+
+dataset_generate/

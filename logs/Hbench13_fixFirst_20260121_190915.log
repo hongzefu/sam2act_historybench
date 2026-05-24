@@ -1,0 +1,1999 @@
+================================================================================
+测试 get_dataset_temporal 函数
+================================================================================
+TRAIN_REPLAY_STORAGE_DIR: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer
+DATA_FOLDER: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate
+Tasks: ['PickXtimes', 'StopCube', 'SwingXtimes', 'BinFill', 'VideoUnmaskSwap', 'VideoUnmask', 'ButtonUnmaskSwap', 'ButtonUnmask', 'VideoRepick', 'VideoPlaceButton', 'VideoPlaceOrder', 'PickHighlight', 'InsertPeg', 'MoveCube', 'PatternLock', 'RouteStick']
+Device: cuda:0
+Batch size: 8
+Number of training samples: 100
+================================================================================
+
+[1/3] 调用 get_dataset_temporal...
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: PickXtimes
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: StopCube
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: SwingXtimes
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: BinFill
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: VideoUnmaskSwap
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: VideoUnmask
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: ButtonUnmaskSwap
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: ButtonUnmask
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: VideoRepick
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: VideoPlaceButton
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: VideoPlaceOrder
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: PickHighlight
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: InsertPeg
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: MoveCube
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: PatternLock
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+[Info] Remove exisitng replay dataset as requested.
+Filling replay ...: RouteStick
+Filling demo 0
+Filling demo 1
+Filling demo 2
+Filling demo 3
+Filling demo 4
+Filling demo 5
+Filling demo 6
+Filling demo 7
+Filling demo 8
+Filling demo 9
+Filling demo 10
+Filling demo 11
+Filling demo 12
+Filling demo 13
+Filling demo 14
+Filling demo 15
+Filling demo 16
+Filling demo 17
+Filling demo 18
+Filling demo 19
+Filling demo 20
+Filling demo 21
+Filling demo 22
+Filling demo 23
+Filling demo 24
+Filling demo 25
+Filling demo 26
+Filling demo 27
+Filling demo 28
+Filling demo 29
+Filling demo 30
+Filling demo 31
+Filling demo 32
+Filling demo 33
+Filling demo 34
+Filling demo 35
+Filling demo 36
+Filling demo 37
+Filling demo 38
+Filling demo 39
+Filling demo 40
+Filling demo 41
+Filling demo 42
+Filling demo 43
+Filling demo 44
+Filling demo 45
+Filling demo 46
+Filling demo 47
+Filling demo 48
+Filling demo 49
+Filling demo 50
+Filling demo 51
+Filling demo 52
+Filling demo 53
+Filling demo 54
+Filling demo 55
+Filling demo 56
+Filling demo 57
+Filling demo 58
+Filling demo 59
+Filling demo 60
+Filling demo 61
+Filling demo 62
+Filling demo 63
+Filling demo 64
+Filling demo 65
+Filling demo 66
+Filling demo 67
+Filling demo 68
+Filling demo 69
+Filling demo 70
+Filling demo 71
+Filling demo 72
+Filling demo 73
+Filling demo 74
+Filling demo 75
+Filling demo 76
+Filling demo 77
+Filling demo 78
+Filling demo 79
+Filling demo 80
+Filling demo 81
+Filling demo 82
+Filling demo 83
+Filling demo 84
+Filling demo 85
+Filling demo 86
+Filling demo 87
+Filling demo 88
+Filling demo 89
+Filling demo 90
+Filling demo 91
+Filling demo 92
+Filling demo 93
+Filling demo 94
+Filling demo 95
+Filling demo 96
+Filling demo 97
+Filling demo 98
+Filling demo 99
+Replay filled with demos.
+✓ 数据集创建成功!
+
+[2/3] 创建数据迭代器...
+✓ 数据迭代器创建成功!
+
+[3/4] 读取并打印样本信息:
+--------------------------------------------------------------------------------
+
+样本 1:
+  键 (keys): ['action', 'reward', 'terminal', 'timeout', 'indices', 'low_dim_state', 'low_dim_state_tp1', 'front_rgb', 'front_rgb_tp1', 'front_depth', 'front_depth_tp1', 'front_point_cloud', 'front_point_cloud_tp1', 'front_camera_extrinsics', 'front_camera_extrinsics_tp1', 'front_camera_intrinsics', 'front_camera_intrinsics_tp1', 'wrist_rgb', 'wrist_rgb_tp1', 'wrist_depth', 'wrist_depth_tp1', 'wrist_point_cloud', 'wrist_point_cloud_tp1', 'wrist_camera_extrinsics', 'wrist_camera_extrinsics_tp1', 'wrist_camera_intrinsics', 'wrist_camera_intrinsics_tp1', 'trans_action_indicies', 'trans_action_indicies_tp1', 'rot_grip_action_indicies', 'rot_grip_action_indicies_tp1', 'ignore_collisions', 'ignore_collisions_tp1', 'gripper_pose', 'gripper_pose_tp1', 'lang_goal_embs', 'lang_goal_embs_tp1', 'lang_goal', 'lang_goal_tp1', 'demo', 'keypoint_idx', 'episode_idx', 'keypoint_frame', 'next_keypoint_frame', 'sample_frame', 'initial_frame', 'tasks']
+    action: shape=torch.Size([8, 8]), dtype=torch.float32
+    reward: shape=torch.Size([8]), dtype=torch.float32
+    terminal: shape=torch.Size([8]), dtype=torch.int8
+    timeout: shape=torch.Size([8]), dtype=torch.bool
+    indices: shape=torch.Size([8]), dtype=torch.int32
+    low_dim_state: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    low_dim_state_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    front_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    front_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    trans_action_indicies: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    trans_action_indicies_tp1: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    rot_grip_action_indicies: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    rot_grip_action_indicies_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    ignore_collisions: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    ignore_collisions_tp1: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    gripper_pose: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    gripper_pose_tp1: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    lang_goal_embs: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal_embs_tp1: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal: type=ndarray, value=[[['ButtonUnmaskSwap task']]
+
+ [['MoveCube task']]
+
+ [['RouteStick task']]
+
+ [['MoveCube task']]
+
+ [
+    lang_goal_tp1: type=ndarray, value=[[['ButtonUnmaskSwap task']]
+
+ [['MoveCube task']]
+
+ [['RouteStick task']]
+
+ [['MoveCube task']]
+
+ [
+    demo: shape=torch.Size([8]), dtype=torch.bool
+    keypoint_idx: shape=torch.Size([8]), dtype=torch.int64
+    episode_idx: shape=torch.Size([8]), dtype=torch.int64
+    keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    next_keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    sample_frame: shape=torch.Size([8]), dtype=torch.int64
+    initial_frame: shape=torch.Size([8]), dtype=torch.int64
+    tasks: type=list, length=8
+
+样本 2:
+  键 (keys): ['action', 'reward', 'terminal', 'timeout', 'indices', 'low_dim_state', 'low_dim_state_tp1', 'front_rgb', 'front_rgb_tp1', 'front_depth', 'front_depth_tp1', 'front_point_cloud', 'front_point_cloud_tp1', 'front_camera_extrinsics', 'front_camera_extrinsics_tp1', 'front_camera_intrinsics', 'front_camera_intrinsics_tp1', 'wrist_rgb', 'wrist_rgb_tp1', 'wrist_depth', 'wrist_depth_tp1', 'wrist_point_cloud', 'wrist_point_cloud_tp1', 'wrist_camera_extrinsics', 'wrist_camera_extrinsics_tp1', 'wrist_camera_intrinsics', 'wrist_camera_intrinsics_tp1', 'trans_action_indicies', 'trans_action_indicies_tp1', 'rot_grip_action_indicies', 'rot_grip_action_indicies_tp1', 'ignore_collisions', 'ignore_collisions_tp1', 'gripper_pose', 'gripper_pose_tp1', 'lang_goal_embs', 'lang_goal_embs_tp1', 'lang_goal', 'lang_goal_tp1', 'demo', 'keypoint_idx', 'episode_idx', 'keypoint_frame', 'next_keypoint_frame', 'sample_frame', 'initial_frame', 'tasks']
+    action: shape=torch.Size([8, 8]), dtype=torch.float32
+    reward: shape=torch.Size([8]), dtype=torch.float32
+    terminal: shape=torch.Size([8]), dtype=torch.int8
+    timeout: shape=torch.Size([8]), dtype=torch.bool
+    indices: shape=torch.Size([8]), dtype=torch.int32
+    low_dim_state: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    low_dim_state_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    front_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    front_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    trans_action_indicies: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    trans_action_indicies_tp1: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    rot_grip_action_indicies: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    rot_grip_action_indicies_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    ignore_collisions: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    ignore_collisions_tp1: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    gripper_pose: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    gripper_pose_tp1: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    lang_goal_embs: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal_embs_tp1: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal: type=ndarray, value=[[['VideoPlaceOrder task']]
+
+ [['VideoPlaceOrder task']]
+
+ [['PickXtimes task']]
+
+ [['VideoPlaceOrde
+    lang_goal_tp1: type=ndarray, value=[[['VideoPlaceOrder task']]
+
+ [['VideoPlaceOrder task']]
+
+ [['PickXtimes task']]
+
+ [['VideoPlaceOrde
+    demo: shape=torch.Size([8]), dtype=torch.bool
+    keypoint_idx: shape=torch.Size([8]), dtype=torch.int64
+    episode_idx: shape=torch.Size([8]), dtype=torch.int64
+    keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    next_keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    sample_frame: shape=torch.Size([8]), dtype=torch.int64
+    initial_frame: shape=torch.Size([8]), dtype=torch.int64
+    tasks: type=list, length=8
+
+样本 3:
+  键 (keys): ['action', 'reward', 'terminal', 'timeout', 'indices', 'low_dim_state', 'low_dim_state_tp1', 'front_rgb', 'front_rgb_tp1', 'front_depth', 'front_depth_tp1', 'front_point_cloud', 'front_point_cloud_tp1', 'front_camera_extrinsics', 'front_camera_extrinsics_tp1', 'front_camera_intrinsics', 'front_camera_intrinsics_tp1', 'wrist_rgb', 'wrist_rgb_tp1', 'wrist_depth', 'wrist_depth_tp1', 'wrist_point_cloud', 'wrist_point_cloud_tp1', 'wrist_camera_extrinsics', 'wrist_camera_extrinsics_tp1', 'wrist_camera_intrinsics', 'wrist_camera_intrinsics_tp1', 'trans_action_indicies', 'trans_action_indicies_tp1', 'rot_grip_action_indicies', 'rot_grip_action_indicies_tp1', 'ignore_collisions', 'ignore_collisions_tp1', 'gripper_pose', 'gripper_pose_tp1', 'lang_goal_embs', 'lang_goal_embs_tp1', 'lang_goal', 'lang_goal_tp1', 'demo', 'keypoint_idx', 'episode_idx', 'keypoint_frame', 'next_keypoint_frame', 'sample_frame', 'initial_frame', 'tasks']
+    action: shape=torch.Size([8, 8]), dtype=torch.float32
+    reward: shape=torch.Size([8]), dtype=torch.float32
+    terminal: shape=torch.Size([8]), dtype=torch.int8
+    timeout: shape=torch.Size([8]), dtype=torch.bool
+    indices: shape=torch.Size([8]), dtype=torch.int32
+    low_dim_state: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    low_dim_state_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    front_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    front_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    trans_action_indicies: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    trans_action_indicies_tp1: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    rot_grip_action_indicies: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    rot_grip_action_indicies_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    ignore_collisions: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    ignore_collisions_tp1: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    gripper_pose: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    gripper_pose_tp1: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    lang_goal_embs: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal_embs_tp1: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal: type=ndarray, value=[[['VideoRepick task']]
+
+ [['MoveCube task']]
+
+ [['BinFill task']]
+
+ [['VideoPlaceOrder task']]
+
+ [[
+    lang_goal_tp1: type=ndarray, value=[[['VideoRepick task']]
+
+ [['MoveCube task']]
+
+ [['BinFill task']]
+
+ [['VideoPlaceOrder task']]
+
+ [[
+    demo: shape=torch.Size([8]), dtype=torch.bool
+    keypoint_idx: shape=torch.Size([8]), dtype=torch.int64
+    episode_idx: shape=torch.Size([8]), dtype=torch.int64
+    keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    next_keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    sample_frame: shape=torch.Size([8]), dtype=torch.int64
+    initial_frame: shape=torch.Size([8]), dtype=torch.int64
+    tasks: type=list, length=8
+
+样本 4:
+  键 (keys): ['action', 'reward', 'terminal', 'timeout', 'indices', 'low_dim_state', 'low_dim_state_tp1', 'front_rgb', 'front_rgb_tp1', 'front_depth', 'front_depth_tp1', 'front_point_cloud', 'front_point_cloud_tp1', 'front_camera_extrinsics', 'front_camera_extrinsics_tp1', 'front_camera_intrinsics', 'front_camera_intrinsics_tp1', 'wrist_rgb', 'wrist_rgb_tp1', 'wrist_depth', 'wrist_depth_tp1', 'wrist_point_cloud', 'wrist_point_cloud_tp1', 'wrist_camera_extrinsics', 'wrist_camera_extrinsics_tp1', 'wrist_camera_intrinsics', 'wrist_camera_intrinsics_tp1', 'trans_action_indicies', 'trans_action_indicies_tp1', 'rot_grip_action_indicies', 'rot_grip_action_indicies_tp1', 'ignore_collisions', 'ignore_collisions_tp1', 'gripper_pose', 'gripper_pose_tp1', 'lang_goal_embs', 'lang_goal_embs_tp1', 'lang_goal', 'lang_goal_tp1', 'demo', 'keypoint_idx', 'episode_idx', 'keypoint_frame', 'next_keypoint_frame', 'sample_frame', 'initial_frame', 'tasks']
+    action: shape=torch.Size([8, 8]), dtype=torch.float32
+    reward: shape=torch.Size([8]), dtype=torch.float32
+    terminal: shape=torch.Size([8]), dtype=torch.int8
+    timeout: shape=torch.Size([8]), dtype=torch.bool
+    indices: shape=torch.Size([8]), dtype=torch.int32
+    low_dim_state: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    low_dim_state_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    front_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    front_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    trans_action_indicies: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    trans_action_indicies_tp1: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    rot_grip_action_indicies: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    rot_grip_action_indicies_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    ignore_collisions: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    ignore_collisions_tp1: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    gripper_pose: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    gripper_pose_tp1: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    lang_goal_embs: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal_embs_tp1: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal: type=ndarray, value=[[['MoveCube task']]
+
+ [['VideoRepick task']]
+
+ [['VideoPlaceOrder task']]
+
+ [['PickHighlight task']
+    lang_goal_tp1: type=ndarray, value=[[['MoveCube task']]
+
+ [['VideoRepick task']]
+
+ [['VideoPlaceOrder task']]
+
+ [['PickHighlight task']
+    demo: shape=torch.Size([8]), dtype=torch.bool
+    keypoint_idx: shape=torch.Size([8]), dtype=torch.int64
+    episode_idx: shape=torch.Size([8]), dtype=torch.int64
+    keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    next_keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    sample_frame: shape=torch.Size([8]), dtype=torch.int64
+    initial_frame: shape=torch.Size([8]), dtype=torch.int64
+    tasks: type=list, length=8
+
+样本 5:
+  键 (keys): ['action', 'reward', 'terminal', 'timeout', 'indices', 'low_dim_state', 'low_dim_state_tp1', 'front_rgb', 'front_rgb_tp1', 'front_depth', 'front_depth_tp1', 'front_point_cloud', 'front_point_cloud_tp1', 'front_camera_extrinsics', 'front_camera_extrinsics_tp1', 'front_camera_intrinsics', 'front_camera_intrinsics_tp1', 'wrist_rgb', 'wrist_rgb_tp1', 'wrist_depth', 'wrist_depth_tp1', 'wrist_point_cloud', 'wrist_point_cloud_tp1', 'wrist_camera_extrinsics', 'wrist_camera_extrinsics_tp1', 'wrist_camera_intrinsics', 'wrist_camera_intrinsics_tp1', 'trans_action_indicies', 'trans_action_indicies_tp1', 'rot_grip_action_indicies', 'rot_grip_action_indicies_tp1', 'ignore_collisions', 'ignore_collisions_tp1', 'gripper_pose', 'gripper_pose_tp1', 'lang_goal_embs', 'lang_goal_embs_tp1', 'lang_goal', 'lang_goal_tp1', 'demo', 'keypoint_idx', 'episode_idx', 'keypoint_frame', 'next_keypoint_frame', 'sample_frame', 'initial_frame', 'tasks']
+    action: shape=torch.Size([8, 8]), dtype=torch.float32
+    reward: shape=torch.Size([8]), dtype=torch.float32
+    terminal: shape=torch.Size([8]), dtype=torch.int8
+    timeout: shape=torch.Size([8]), dtype=torch.bool
+    indices: shape=torch.Size([8]), dtype=torch.int32
+    low_dim_state: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    low_dim_state_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.float32
+    front_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    front_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    front_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    front_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    front_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_rgb: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_rgb_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_depth: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_depth_tp1: shape=torch.Size([8, 1, 1, 128, 128]), dtype=torch.float32
+    wrist_point_cloud: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_point_cloud_tp1: shape=torch.Size([8, 1, 3, 128, 128]), dtype=torch.float32
+    wrist_camera_extrinsics: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_extrinsics_tp1: shape=torch.Size([8, 1, 4, 4]), dtype=torch.float32
+    wrist_camera_intrinsics: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    wrist_camera_intrinsics_tp1: shape=torch.Size([8, 1, 3, 3]), dtype=torch.float32
+    trans_action_indicies: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    trans_action_indicies_tp1: shape=torch.Size([8, 1, 3]), dtype=torch.int32
+    rot_grip_action_indicies: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    rot_grip_action_indicies_tp1: shape=torch.Size([8, 1, 4]), dtype=torch.int32
+    ignore_collisions: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    ignore_collisions_tp1: shape=torch.Size([8, 1, 1]), dtype=torch.int32
+    gripper_pose: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    gripper_pose_tp1: shape=torch.Size([8, 1, 7]), dtype=torch.float32
+    lang_goal_embs: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal_embs_tp1: shape=torch.Size([8, 1, 77, 512]), dtype=torch.float32
+    lang_goal: type=ndarray, value=[[['PickXtimes task']]
+
+ [['VideoPlaceButton task']]
+
+ [['VideoUnmaskSwap task']]
+
+ [['BinFill task'
+    lang_goal_tp1: type=ndarray, value=[[['PickXtimes task']]
+
+ [['VideoPlaceButton task']]
+
+ [['VideoUnmaskSwap task']]
+
+ [['BinFill task'
+    demo: shape=torch.Size([8]), dtype=torch.bool
+    keypoint_idx: shape=torch.Size([8]), dtype=torch.int64
+    episode_idx: shape=torch.Size([8]), dtype=torch.int64
+    keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    next_keypoint_frame: shape=torch.Size([8]), dtype=torch.int64
+    sample_frame: shape=torch.Size([8]), dtype=torch.int64
+    initial_frame: shape=torch.Size([8]), dtype=torch.int64
+    tasks: type=list, length=8
+
+[4/4] 读取并可视化 replay 中的 front_point_cloud:
+--------------------------------------------------------------------------------
+  front_point_cloud 形状: torch.Size([8, 1, 3, 128, 128])
+  front_point_cloud 数据类型: torch.float32
+  批次大小: 8, 时序步数: 1, 通道数: 3, 高度: 128, 宽度: 128
+  重塑后点云形状: (16384, 3)
+  有效点数: 16384
+  使用 RGB 颜色着色，成功采样 16384 个点的颜色
+✓ 可视化已保存到: replay_front_point_cloud_visualization.html
+
+================================================================================
+测试完成!
+================================================================================

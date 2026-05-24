@@ -5,6 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import logging
+import os
 
 import torch
 from hydra import compose, initialize
@@ -135,6 +136,13 @@ def build_sam2_custom_select(
 
 def _load_checkpoint_select(model, ckpt_path, include_keys=None):
     if ckpt_path is not None:
+        # Resolve relative path to absolute path based on project root
+        if not os.path.isabs(ckpt_path):
+            # Get the project root directory (sam2act_historybench)
+            # This file is in sam2act/mvt/sam2_train/, so go up 3 levels
+            current_file_dir = os.path.dirname(os.path.abspath(__file__))
+            project_root = os.path.abspath(os.path.join(current_file_dir, '..', '..', '..'))
+            ckpt_path = os.path.join(project_root, ckpt_path.lstrip('./'))
         # Load the checkpoint
         sd = torch.load(ckpt_path, map_location="cpu")["model"]
 
