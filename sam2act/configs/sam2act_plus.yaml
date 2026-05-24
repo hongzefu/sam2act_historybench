@@ -4,7 +4,7 @@ wandb: True
 tasks: put_block_back
 agent: our
 demo: 100
-bs: 10
+bs: 20
 num_workers: 5
 epochs: 20
 sample_distribution_mode: demo_uniform_temporal

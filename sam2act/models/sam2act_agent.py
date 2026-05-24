@@ -11,8 +11,8 @@ import torchvision
 import numpy as np
 import torch.nn as nn
 import bitsandbytes as bnb
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+#import plotly.graph_objects as go
+#from plotly.subplots import make_subplots
 
 from scipy.spatial.transform import Rotation
 from torch.cuda.amp import autocast, GradScaler

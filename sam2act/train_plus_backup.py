@@ -34,6 +34,7 @@ from sam2act.utils.rvt_utils import (
     get_num_feat,
     load_agent,
     load_agent_only_model,
+    load_agent_only_model_exclude,
     RLBENCH_TASKS,
 )
 from sam2act.utils.peract_utils import (
@@ -88,8 +89,6 @@ def train(agent, dataset, training_iterations, log_iter, rank=0, node_rank=0, if
             for k, v in raw_batch.items()
             if type(v) == torch.Tensor
         }
-
-
         batch["tasks"] = raw_batch["tasks"]
         batch["lang_goal"] = raw_batch["lang_goal"]
         update_args = {
@@ -117,11 +116,11 @@ def train(agent, dataset, training_iterations, log_iter, rank=0, node_rank=0, if
                 wandb.log(data = {
                                     'total_loss': loss_log['total_loss'][iteration],
                                     'trans_loss': loss_log['trans_loss'][iteration],
-                                    'rot_loss_x': loss_log['rot_loss_x'][iteration],
-                                    'rot_loss_y': loss_log['rot_loss_y'][iteration],
-                                    'rot_loss_z': loss_log['rot_loss_z'][iteration],
-                                    'grip_loss': loss_log['grip_loss'][iteration],
-                                    'collision_loss': loss_log['collision_loss'][iteration],
+                                    # 'rot_loss_x': loss_log['rot_loss_x'][iteration],
+                                    # 'rot_loss_y': loss_log['rot_loss_y'][iteration],
+                                    # 'rot_loss_z': loss_log['rot_loss_z'][iteration],
+                                    # 'grip_loss': loss_log['grip_loss'][iteration],
+                                    # 'collision_loss': loss_log['collision_loss'][iteration],
                                     'lr': loss_log['lr'][iteration],
                                     }, 
                             step = log_iter)
@@ -172,16 +171,16 @@ def get_logdir(cmd_args, exp_cfg):
 
 
 def dump_log(exp_cfg, mvt_cfg, cmd_args, log_dir):
-    with open(f"{log_dir}/exp_cfg.yaml", "w") as yaml_file:
+    with open(f"{log_dir}/exp_cfg_plus.yaml", "w") as yaml_file:
         with redirect_stdout(yaml_file):
             print(exp_cfg.dump())
 
-    with open(f"{log_dir}/mvt_cfg.yaml", "w") as yaml_file:
+    with open(f"{log_dir}/mvt_cfg_plus.yaml", "w") as yaml_file:
         with redirect_stdout(yaml_file):
             print(mvt_cfg.dump())
 
     args = cmd_args.__dict__
-    with open(f"{log_dir}/args.yaml", "w") as yaml_file:
+    with open(f"{log_dir}/args_plus.yaml", "w") as yaml_file:
         yaml.dump(args, yaml_file)
 
 
@@ -204,9 +203,7 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     if cmd_args.exp_cfg_path != "":
         exp_cfg.merge_from_file(cmd_args.exp_cfg_path)
     if cmd_args.exp_cfg_opts != "":
-        # fhz change: strip whitespace and filter empty strings to fix type conversion issues
-        opts_list = [opt.strip() for opt in cmd_args.exp_cfg_opts.split(" ") if opt.strip()]
-        exp_cfg.merge_from_list(opts_list)
+        exp_cfg.merge_from_list(cmd_args.exp_cfg_opts.split(" "))
 
     if ddp:
         print(f"Running DDP on rank {rank}.")
@@ -230,12 +227,11 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     # to match peract, iterations per epoch
     TRAINING_ITERATIONS = int(exp_cfg.train_iter // (exp_cfg.bs * world_size))
     EPOCHS = exp_cfg.epochs
-    TRAIN_REPLAY_STORAGE_DIR =  "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
+    TRAIN_REPLAY_STORAGE_DIR = "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer"
     TRAIN_REPLAY_STORAGE_DIR_MEM = "replay_temporal_memory/replay_train"
     # TEST_REPLAY_STORAGE_DIR = "replay/replay_val"
     log_dir = get_logdir(cmd_args, exp_cfg)
     tasks = get_tasks(exp_cfg)
-
     if rank == 0:
         print("Training on {} tasks: {}".format(len(tasks), tasks))
 
@@ -244,9 +240,7 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
     if cmd_args.mvt_cfg_path != "":
         mvt_cfg.merge_from_file(cmd_args.mvt_cfg_path)
     if cmd_args.mvt_cfg_opts != "":
-        # fhz change: strip whitespace and filter empty strings to fix type conversion issues
-        opts_list = [opt.strip() for opt in cmd_args.mvt_cfg_opts.split(" ") if opt.strip()]
-        mvt_cfg.merge_from_list(opts_list)
+        mvt_cfg.merge_from_list(cmd_args.mvt_cfg_opts.split(" "))
 
     mvt_cfg.feat_dim = get_num_feat(exp_cfg.peract)
     mvt_cfg.freeze()
@@ -303,15 +297,15 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
             stage_two=mvt_cfg.stage_two,
             rot_ver=mvt_cfg.rot_ver,
             scene_bounds=SCENE_BOUNDS,
-            #cameras=CAMERAS,
-            cameras=["front", "wrist"],
+            cameras=CAMERAS,
             log_dir=f"{log_dir}/test_run/",
             cos_dec_max_step=EPOCHS * TRAINING_ITERATIONS,
+            use_memory=mvt_cfg.use_memory,
+            num_maskmem=mvt_cfg.num_maskmem,
             **exp_cfg.peract,
             **exp_cfg.rvt,
         )
         agent.build(training=True, device=device)
-
     else:
         assert False, "Incorrect agent"
 
@@ -326,9 +320,9 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
         epoch = load_agent(agent_path, agent, only_epoch=False)
         start_epoch = epoch + 1
 
-    elif os.path.exists(f'{log_dir}/model_last.pth'):
+    elif os.path.exists(f'{log_dir}/model_plus_last.pth'):
         
-        agent_path = f'{log_dir}/model_last.pth'
+        agent_path = f'{log_dir}/model_plus_last.pth'
         if rank == 0:
             print(f"resume from checkpoint")
         
@@ -336,6 +330,18 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
         if rank == 0:
             print(f"Recovering model and checkpoint from {agent_path}, model epoch: {epoch}")
         start_epoch = epoch + 1
+
+    
+    elif os.path.exists(f'{log_dir}/model_last.pth'):
+        
+        agent_path = f'{log_dir}/model_last.pth'
+        if rank == 0:
+            print(f"resume from checkpoint")
+        
+        # epoch = load_agent_only_model(agent_path, agent, only_epoch=False)
+        epoch = load_agent_only_model_exclude(agent_path, agent, only_epoch=False, exclude_keys=['memory_attention', 'memory_encoder', 'maskmem_tpos_enc'])
+        if rank == 0:
+            print(f"Recovering model and checkpoint from {agent_path}")
         
     dist.barrier()
 
@@ -377,8 +383,8 @@ def experiment(cmd_args, devices, rank, node_rank, world_size):
 
         if rank == 0 and node_rank == 0:
             # TODO: add logic to only save some models
-            save_agent(agent, f"{log_dir}/model_{i}.pth", i)
-            save_agent(agent, f"{log_dir}/model_last.pth", i)
+            save_agent(agent, f"{log_dir}/model_plus_{i}.pth", i)
+            save_agent(agent, f"{log_dir}/model_plus_last.pth", i)
         i += 1
         log_iter += TRAINING_ITERATIONS
 

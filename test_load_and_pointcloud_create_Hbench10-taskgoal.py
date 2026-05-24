@@ -1640,7 +1640,7 @@ BATCH_SIZE_TEST = None      # 测试集的批次大小，如果 only_train=True 
 TEST_REPLAY_STORAGE_DIR = None
 
 # 演示数量配置
-NUM_TRAIN = 1   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
+NUM_TRAIN = 50   # 每个任务使用的训练演示数量，从演示数据集中选择前 NUM_TRAIN 个演示
 NUM_VAL = None   # 每个任务使用的验证演示数量，如果 only_train=True 可以设为 None
 
 # 数据刷新标志
@@ -1653,7 +1653,7 @@ refresh_replay = True  # 刷新已有数据，重新生成 replay buffer
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 # 数据加载配置
-num_workers = 4  # DataLoader 的并行工作进程数，用于加速数据加载
+num_workers = 8  # DataLoader 的并行工作进程数，用于加速数据加载
 
 # 数据集模式配置
 only_train = True  # 是否只创建训练集，如果为 True 则不创建测试集
