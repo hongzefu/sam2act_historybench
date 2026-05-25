@@ -29,6 +29,8 @@ dependencies = [
     "regex",
     "flask",
     "clip",
+    "websockets",
+    "msgpack",
 ]
 
 [tool.uv]

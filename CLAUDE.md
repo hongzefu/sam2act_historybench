@@ -1,6 +1,6 @@
 # CLAUDE.md — SAM2Act / SAM2Act+ 评测指南
 
-> 本文件只讲**评测（HistoryBench 仿真）**：硬性约定、评测链路、推理环境怎么建、最新模型在哪、怎么跑。
+> 本文件只讲**评测（HistoryBench / RoboMME 仿真）**：硬性约定、评测链路、两个环境怎么建、最新模型在哪、怎么跑。
 > 训练、RLBench 原始评测等不在此文档范围内。
 
 ---
@@ -8,23 +8,30 @@
 ## 0. 硬性约定（务必遵守）
 
 - **必须用中文和用户沟通。** 所有回复、解释、总结一律用中文。
-- **推理环境必须用 `uv` 管理**（`uv lock` + `uv sync`，见第 3 节），不要用 `pip install` / `conda` 临时往环境里塞包。依赖锁在 `pyproject.toml` + `uv.lock`，要改依赖就改 `pyproject.toml` 后重新 `uv lock`。
-- 仿真/客户端那一侧用现成的 micromamba 环境 `maniskillenv1028`（这一侧不归 uv 管，别动）。
+- **服务端（推理）环境必须用 `uv` 管理**（`uv lock` + `uv sync`，见第 3 节），不要 `pip install` 临时塞包。依赖锁在 `pyproject.toml` + `uv.lock`。
+- **客户端（仿真+评测）用全新独立 micromamba 环境 `sam2act-robomme-eval`**，按 robomme_policy_learning 的 `examples/robomme/readme.md` 装（见第 3 节）。**不再用旧的 `maniskillenv1028`**。
+- **SAM2Act 是离散 waypoint（关键帧）策略：必须用 robomme 的 `action_space="waypoint"`，由 benchmark 内置 planner 执行，绝不自己写运动规划器。**
 
 ---
 
-## 1. 评测链路（三方拓扑，现已全在 sled-vail 本地）
+## 1. 评测链路（两环境 + WebSocket，对齐 robomme_policy_learning）
 
-一次 HistoryBench 评测由**三部分**组成：
+参考 `https://github.com/RoboMME/robomme_policy_learning`（尤其 `examples/robomme/`）。一次评测两部分，通过 **WebSocket + msgpack** 通信：
 
-| 角色 | 位置 | 职责 |
+| 角色 | 位置 / 环境 | 职责 |
 | --- | --- | --- |
-| **模型 / 权重 + 推理服务** | 本仓库 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench`，用 repo 的 **uv `.venv`** 跑 | 加载 checkpoint，暴露 `POST /reset_memory` + `POST /act`（Flask，默认 :8001） |
-| **仿真 + 评测客户端** | `/data/hongzefu/robomme-sam2act`，用 micromamba `maniskillenv1028` 跑 | ManiSkill 3 + 16 个 HistoryBench 任务；评测脚本是 **HTTP 客户端** |
+| **WS 推理服务端**（SAM2Act 权重） | 本仓库 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench`，repo **uv `.venv`**（torch 2.5.1） | `serve_policy.py` 加载 checkpoint，WS 暴露 `reset` / `add_buffer` / `infer`（默认 :8001，被占就换端口如 8011） |
+| **评测客户端**（sim + 编排） | `/data/hongzefu/robomme_policy_learning-vqa-test/examples/sam2act/`，micromamba **`sam2act-robomme-eval`**（torch 2.9.1 + ManiSkill + robomme + openpi-client） | `robomme.BenchmarkEnvBuilder(action_space="waypoint")` 跑 16 任务；`env_runner` 适配器是 WS 客户端 |
 
-数据流：客户端读数据集 → 在 ManiSkill 里复现 episode → 每步观测 POST 给 `/act` → 拿动作执行 → 统计成功率。
+数据流：`env.reset()` 跑完**演示段** → 采样 demo 帧 `add_buffer` 喂服务端积累记忆 → 评测段每步 `env.unwrapped.get_obs()` → `infer` 拿 **9 维动作** `[x,y,z, qw,qx,qy,qz, grip, coll]` → 客户端转 **7 维 waypoint** `[x,y,z, rpy, grip(-1/+1)]` → `env.step()`（**内置 screw→RRT\* planner 执行**）→ 读 `info["status"]` 判成败。
 
-> ⚠ 历史背景：CLAUDE.md 旧版说推理服务在远程 `141.212.48.176`、环境 `sam2act4`。那台主机/那个环境**已不存在**；推理服务端代码（`sam2act/historybench_eval/agent_api_serverv7.*.py`）其实**已在仓库里**。现在服务端和客户端**都在本机 sled-vail（141.212.115.116，2× RTX 6000 Ada）跑**。
+> **协议**（`serving/websocket_policy_server.py` 的 `_handler` 按标志位分发）：
+> - `client.reset()` → `{"reset":True}` → 清 `mvt1/mvt2` 记忆库；
+> - `client.add_buffer({"add_buffer":True,"frames":[...]})` → 逐帧 `agent.act` 仅积累记忆；
+> - `client.infer({obs_obj, curr_idx, lang_goal, episode_length})` → `{"actions":[9维]}`（一次一个关键帧）。
+> 两端用同一份 `msgpack_numpy.py`（服务端 vendored 在 `serving/`，客户端来自 openpi-client）。
+
+> ⚠ 历史：旧链路是 Flask `POST /act` + 客户端**自写 planner**（`/data/hongzefu/robomme-sam2act/scripts/eval_binfill_test_client.py` + `planner_fail_safe.py`）。已被本 WS + waypoint 链路取代；旧的 `agent_api_serverv7.*.py` 仍在仓库但不再是主路径。
 
 ---
 
@@ -44,73 +51,86 @@
 | --- | --- |
 | `sam2act/runs/sam2act_all_v1/model_last.pth` | 最新基础模型 |
 
-> `load_agent` 用 `model_path` 是否含 `_plus_` 自动选配置：含 `_plus_` → 用同目录 `exp_cfg_plus.yaml` / `mvt_cfg_plus.yaml`；否则用 `exp_cfg.yaml` / `mvt_cfg.yaml`。
+> `load_agent` 用 `model_path` 是否含 `_plus_` 自动选配置：含 `_plus_` → 同目录 `exp_cfg_plus.yaml` / `mvt_cfg_plus.yaml`；否则 `exp_cfg.yaml` / `mvt_cfg.yaml`。
 > SAM2 底座权重：`sam2act/mvt/sam2_train/checkpoints/sam2.1_hiera_base_plus.pt`。
 
 ---
 
-## 3. 建推理环境（uv，仅推理）
+## 3. 建两个环境
 
-环境定义在 `pyproject.toml` + `uv.lock`：**纯推理依赖**，torch 2.5.1+cu121 / py3.10，**不含** tensorflow/rlbench/pyrep/pytorch3d 等训练-仿真栈。
+### 3a. 服务端环境（uv，仅推理）——本仓库 `.venv`
+`pyproject.toml` + `uv.lock`：纯推理依赖，torch 2.5.1+cu121 / py3.10，**已含 `websockets` + `msgpack`**（WS 服务用）。源码保持原样，推理适配在 venv 挂件：
+- `_sam2act_stubs.py`：把训练/仿真依赖伪装成 dummy、屏蔽 tensorboard，注入 `Observation` + `VisionSensor.pointcloud_from_depth_and_camera_params`。
+- `_sam2act_stubs.pth` / `_sam2act_paths.pth`：加载 shim，并把 repo 根、内置 `YARR`/`peract_colab`/`point-renderer`、`sam2act` 加进 `sys.path`。
 
-仓库 `sam2act` 源码**保持原样**（不打 import 守卫）。推理适配只放在 venv 内的挂件文件里：
-- `.venv/.../site-packages/_sam2act_stubs.py`：meta-path shim，把训练/仿真依赖伪装成 dummy、屏蔽 `torch.utils.tensorboard`，并注入推理**真正要用**的 `Observation` + `VisionSensor.pointcloud_from_depth_and_camera_params`。
-- `_sam2act_stubs.pth` / `_sam2act_paths.pth`：启动时加载 shim，并把 repo 根、内置 `YARR`/`peract_colab`/`point-renderer`、`sam2act` 目录加进 `sys.path`。
-
-这些挂件 `uv sync` **不会自动生成**（`.venv` 被 gitignore）。一条命令搞定（含 `uv sync` + 装挂件 + 校验）：
-
+挂件 `uv sync` 不自动生成，一条命令（含 `uv sync` + 装挂件 + 校验）：
 ```bash
-bash sam2act/historybench_eval/infer_env/setup_venv.sh
+bash sam2act/historybench_eval/infer_env/setup_venv.sh   # 打印 OK: from sam2act.eval import load_agent
+# 若改过依赖（如加 ws/msgpack）：uv lock && uv sync
 ```
 
-跑完应打印 `OK: from sam2act.eval import load_agent`。（挂件源码与该脚本是 git-tracked 的，所以可复现。）
+### 3b. 客户端环境（micromamba `sam2act-robomme-eval`）——按 robomme_policy_learning readme
+```bash
+ENV=sam2act-robomme-eval
+REPO=/data/hongzefu/robomme_policy_learning-vqa-test
+micromamba create -n $ENV python=3.11 -y
+micromamba run -n $ENV pip install torch==2.9.1 torchvision==0.24.1 moviepy==2.2.1 ninja==1.13.0 setuptools==80.9.0 \
+  websockets msgpack "git+https://github.com/YinpeiDai/ManiSkill.git@dev"
+micromamba run -n $ENV pip install -e $REPO/third_party/robomme_benchmark
+micromamba run -n $ENV pip install -e $REPO/packages/openpi-client
+```
+- SAM2Act 用 Null 子目标，**精简掉**了 readme 里 VLM 子目标依赖（ms_swift/deepspeed/google-*/flash-attn）。
+- robomme 包即 `$REPO/third_party/robomme_benchmark`（submodule 已初始化），test split 元数据在包内 `env_metadata/test/`。
+- micromamba 二进制：`/home/hongzefu/.local/bin/micromamba`（`MAMBA_ROOT_PREFIX=/home/hongzefu/micromamba`）。
 
 ---
 
 ## 4. 怎么跑评测
 
-### Step 1 — 起推理服务（本机，repo 目录，用 `.venv`）
+一键编排（tmux 双窗口，镜像 robomme `scripts/eval.sh`）：
+```bash
+bash /data/hongzefu/robomme_policy_learning-vqa-test/examples/sam2act/run_eval.sh
+# 内含参数：MODEL=sam2act_plus_all_v4/model_plus_last.pth，GPU_server/GPU_client，ONLY_TASKS=BinFill，MAX_EPISODES=5
+```
 
+或手动两步：
+
+### Step 1 — 起 WS 服务端（repo `.venv`）
 ```bash
 cd /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench
-CUDA_VISIBLE_DEVICES=1 .venv/bin/python \
-  sam2act/historybench_eval/agent_api_serverv7.5clearMem-parallel2gpu-seed.py \
-  --num_servers 1 --device 0 --port 8001 \
+CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python \
+  sam2act/historybench_eval/serve_policy.py \
   --model_folder "$PWD/sam2act/runs/sam2act_plus_all_v4" \
-  --model_name model_plus_last.pth
-# 评基础 SAM2Act → --model_folder .../sam2act_all_v1 --model_name model_last.pth
+  --model_name model_plus_last.pth --device 0 --port 8011 --seed 0
 ```
+- ⚠ **GPU 写法**：`CUDA_VISIBLE_DEVICES=<空闲卡>` + `--device 0`（CLIP 默认 cuda:0；用 `--device 1` 会设备冲突）。先 `nvidia-smi` 挑空闲卡；显存吃紧加 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`。
+- 就绪判据：日志出现 `server listening on 0.0.0.0:8011`（模型加载约 20s）。
+- 后台：`setsid ... > /tmp/sam2act_ws_server.log 2>&1 < /dev/null &`，停止按 PID `kill`（**别 pkill -f serve_policy**，会误杀自己的 shell）。
 
-- ⚠ **GPU 写法必须如此**：`CUDA_VISIBLE_DEVICES=<空闲GPU>` + `--device 0`。CLIP 默认落在 `cuda:0`，若用 `--device 1` 之类会在 `/act` 报 `cuda:0 vs cuda:1` 设备冲突。先用 `nvidia-smi` 挑一张空闲卡。
-- 就绪判据：`curl -s http://127.0.0.1:8001/health` 返回 `{"message":"Agent is ready",...}`（模型加载约 15s）。
-- 后台跑：`setsid nohup CUDA_VISIBLE_DEVICES=1 .venv/bin/python <上面那串> > /tmp/sam2act_server.log 2>&1 < /dev/null &`，停止用 `kill <PID>`。
-  - 注意别用 `pkill -f agent_api_serverv7.5...`：模式会匹配到你自己的命令行，把当前 shell 也杀了。按 PID 杀。
-
-### Step 2 — 跑评测客户端（sim 侧，`maniskillenv1028`）
-
+### Step 2 — 跑评测客户端（`sam2act-robomme-eval`）
 ```bash
-cd /data/hongzefu/robomme-sam2act
-/home/hongzefu/micromamba/envs/maniskillenv1028/bin/python scripts/eval_binfill_test_client.py \
-  --api_url http://127.0.0.1:8001 \
-  --env_id BinFill --split test \
-  --env_metadata_root /data/hongzefu/robomme-sam2act/env_metadata \
-  --max_episodes 10 --max_steps 40
+cd /data/hongzefu/robomme_policy_learning-vqa-test
+CUDA_VISIBLE_DEVICES=1 /home/hongzefu/.local/bin/micromamba run -n sam2act-robomme-eval \
+  python examples/sam2act/eval.py --host 127.0.0.1 --port 8011 \
+  --only_tasks BinFill --max_episodes 5 --max_steps 40 --history_frames 16
 ```
+- 结果写 `examples/sam2act/runs/eval_<时间戳>/log.json`（+ `progress.json` 增量）。`--only_tasks` 留空 = 全 16 任务；`--max_episodes 0` = 该任务全部。
+- ⚠ **128×128**：robomme env 默认渲 256×256，但 SAM2Act 要 128。客户端 `utils.build_obs_obj` 已 **resize RGB/depth 到 128 并同步缩放相机内参**（否则点云错位）。`BenchmarkEnvBuilder` 不暴露 sensor_configs，故在客户端 resize，不改第三方包。
 
-- 数据集：`/data/hongzefu/robomme-sam2act/env_metadata/{test,train,val}/record_dataset_{env_id}_metadata.json`（每条含 `seed`、`difficulty`）。
-- `--max_episodes 0` = 全部；结果写到 `scripts/results/<env>_<split>_<时间戳>.json`（逐条增量写）。
-- ⚠ **128×128 必须项**：HistoryBench 相机默认渲染 256×256，但 SAM2Act 要 `IMAGE_SIZE=128`。客户端已在 `gym.make` 传 `sensor_configs=dict(width=128,height=128)`；少了它 `/act` 会报点云/mask 形状不匹配（131072 vs 32768）。新写客户端务必保留这一项。
+### Step 3 — 评测语义（客户端 `examples/sam2act/{eval,env_runner,utils}.py`）
+1. `runner.make_env(ep)` 用 `BenchmarkEnvBuilder(dataset="test", action_space="waypoint", include_maniskill_obs=True)`。
+2. `client.reset()` 清记忆；`env.reset()` 自动跑演示段返回 `maniskill_obs` 稠密帧；采样后 `client.add_buffer` 喂服务端积累记忆。
+3. 评测段：`build_obs_obj(get_obs()) → client.infer → 9维动作 → env_runner 转 7维 waypoint → env.step()`（内置 planner），直到 `status∈{success,fail}` 或 `max_steps`(timeout)。
+4. 统计每任务成功率（总体 + 按难度），写 `log.json`。
+- **9→7 转换**经旧 `action_to_pose` 中转保序（保留已验证四元数约定）；grip `<=0.5→-1关`、else `+1开`。MultiStep 内部 rpy→quat 还原同一 Pose。
 
-### Step 3 — 评测语义
-1. 从 metadata 读每个 episode。
-2. `env.reset()` 内部自动跑完**演示段**，返回稠密轨迹；客户端 `POST /reset_memory` 清记忆，再把采样的演示帧喂给 `/act` 让模型积累记忆。
-3. 评测段：逐步 `raw obs → /act → ee 位姿动作 → 运动规划器执行`，直到 success / fail / max_steps。
-4. 统计每任务成功率（总体 + 按难度）。
-
-> SAM2Act 与 SAM2Act+ 共用同一套客户端，区别只在服务端加载了哪个 checkpoint。同时评两个 → 起两个服务（不同端口/不同空闲 GPU）。
+> SAM2Act 与 SAM2Act+ 共用同一客户端，区别只在服务端加载哪个 checkpoint。
 
 ### 已验证基线
-`sam2act_plus_all_v4/model_plus_last.pth` 在 **BinFill test 10 episodes = 4/10（easy 3/6, medium 1/2, hard 0/2）**。
+- 旧 historybench + 自写 planner（已弃用）：`sam2act_plus_all_v4` 在 BinFill test 10ep = 4/10。
+- 新 robomme + waypoint 链路（`sam2act_plus_all_v4/model_plus_last.pth`，2026-05-24 验证）：**BinFill test 5ep = 1/5（easy 1/3, medium 0/1, hard 0/1）**。三种判定（success/fail/timeout）均正常，每集执行 10–40 个 waypoint 经内置 planner。
+  > ⚠ 换成第三方 robomme 包后 env 定义/seed/成功判定与旧 historybench 不同，**与旧 4/10 基线不可直接比较**。
+  > ⚠ robomme 的 `env.reset()` 每个 list 只返回 1 帧（非 historybench 的稠密 demo 轨迹），故 demo 记忆只喂 1 帧种子；SAM2Act+ 记忆主要靠评测循环里每次 `infer→act` 逐步累积。若要给记忆型任务喂更多 demo 帧，需另查 robomme demo 录制粒度。
 
-### 16 个 HistoryBench 任务
+### 16 个 HistoryBench / RoboMME 任务
 `PickXtimes, StopCube, SwingXtimes, BinFill, VideoUnmaskSwap, VideoUnmask, ButtonUnmaskSwap, ButtonUnmask, VideoRepick, VideoPlaceButton, VideoPlaceOrder, PickHighlight, InsertPeg, MoveCube, PatternLock, RouteStick`
