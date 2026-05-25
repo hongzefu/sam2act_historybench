@@ -1,0 +1,639 @@
+Start training ...
+Rank [0], Epoch [0]: Training on train dataset
+/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py:627: UserWarning: This DataLoader will create 5 worker processes in total. Our suggested max number of worker in current system is 4, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+  0%|          | 0/10208 [00:00<?, ?it/s]/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/models/sam2act_agent.py:888: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  trans_aug_range=torch.tensor(self._transform_augmentation_xyz),  # 平移增强范围
+/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/graph.py:841: UserWarning: Grad strides do not match bucket view strides. This may indicate grad was not created according to the gradient layout contract, or that the param's strides changed since DDP was constructed.  This is not an error, but may impair performance.
+grad.sizes() = [36, 256, 1, 1], strides() = [256, 1, 256, 256]
+bucket_view.sizes() = [36, 256, 1, 1], strides() = [256, 1, 1, 1] (Triggered internally at /pytorch/torch/csrc/distributed/c10d/reducer.cpp:334.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+ 31%|███▏      | 3199/10208 [59:40<2:12:51,  1.14s/it]
+total loss: 25.159971504211427 | trans loss: 10.815764493942261
+total loss: 24.181756725311278 | trans loss: 10.731131286621094
+total loss: 22.965391788482666 | trans loss: 10.565256576538086
+total loss: 21.779771480560303 | trans loss: 10.348850069046021
+total loss: 20.373817729949952 | trans loss: 10.074662427902222
+total loss: 18.462880744934083 | trans loss: 9.705078992843628
+total loss: 16.14287848472595 | trans loss: 9.216007976531982
+total loss: 13.819797649383545 | trans loss: 8.609122581481934
+total loss: 11.970576162338256 | trans loss: 7.9086327600479125
+total loss: 10.950645980834961 | trans loss: 7.233559498786926
+total loss: 10.159115705490112 | trans loss: 6.660252151489257
+total loss: 9.580545272827148 | trans loss: 6.110144996643067
+total loss: 9.285195350646973 | trans loss: 5.866621932983398
+total loss: 9.028957538604736 | trans loss: 5.5752374982833866
+total loss: 8.755951824188232 | trans loss: 5.3790196561813355
+total loss: 8.625473818778993 | trans loss: 5.258773770332336
+total loss: 8.385190205574036 | trans loss: 5.083770170211792
+total loss: 8.345658531188965 | trans loss: 5.099010410308838
+total loss: 7.951756725311279 | trans loss: 4.893577370643616
+total loss: 7.857519426345825 | trans loss: 4.957501158714295
+total loss: 7.6813421630859375 | trans loss: 4.877271671295166
+total loss: 7.43831847190857 | trans loss: 4.833823456764221
+total loss: 7.281613292694092 | trans loss: 4.762328062057495
+total loss: 7.159265499114991 | trans loss: 4.770429773330688
+total loss: 6.951524114608764 | trans loss: 4.680736513137817
+total loss: 6.869186635017395 | trans loss: 4.6767628955841065
+total loss: 6.796842927932739 | trans loss: 4.6717438220977785
+total loss: 6.773845829963684 | trans loss: 4.614825901985168
+total loss: 6.590342059135437 | trans loss: 4.609235391616822
+total loss: 6.587725749015808 | trans loss: 4.605203099250794
+total loss: 6.49486846446991 | trans loss: 4.585159275531769
+total loss: 6.477928056716919 | trans loss: 4.567230641841888
+total loss: 6.289131097793579 | trans loss: 4.476277651786805
+total loss: 6.275820226669311 | trans loss: 4.481235084533691
+total loss: 6.201146674156189 | trans loss: 4.442011878490448
+total loss: 6.244532947540283 | trans loss: 4.492275834083557
+total loss: 6.118079161643982 | trans loss: 4.45765525341034
+total loss: 6.146511774063111 | trans loss: 4.461756727695465
+total loss: 6.120718493461609 | trans loss: 4.46796748638153
+total loss: 6.053400163650513 | trans loss: 4.434507355690003
+total loss: 5.96873779296875 | trans loss: 4.398236427307129
+total loss: 5.99357458114624 | trans loss: 4.437188582420349
+total loss: 5.919741978645325 | trans loss: 4.389496397972107
+total loss: 5.848833527565002 | trans loss: 4.363537533283234
+total loss: 5.812068829536438 | trans loss: 4.363534693717956
+total loss: 5.756872305870056 | trans loss: 4.329239430427552
+total loss: 5.8833003330230715 | trans loss: 4.381189956665039
+total loss: 5.760562343597412 | trans loss: 4.378555126190186
+total loss: 5.71181056022644 | trans loss: 4.328601520061493
+total loss: 5.752900648117065 | trans loss: 4.3333054280281065
+total loss: 5.7240150356292725 | trans loss: 4.337593824863434
+total loss: 5.67728208065033 | trans loss: 4.315314269065857
+total loss: 5.677754697799682 | trans loss: 4.315768766403198
+total loss: 5.644174084663391 | trans loss: 4.287639787197113
+total loss: 5.619298357963562 | trans loss: 4.304025461673737
+total loss: 5.599257807731629 | trans loss: 4.312740061283112
+total loss: 5.533682017326355 | trans loss: 4.266985175609588
+total loss: 5.563113021850586 | trans loss: 4.276527516841888
+total loss: 5.597300114631653 | trans loss: 4.27922224521637
+total loss: 5.541784300804138 | trans loss: 4.285693700313568
+total loss: 5.515343713760376 | trans loss: 4.268940432071686
+total loss: 5.492935285568238 | trans loss: 4.249111225605011
+total loss: 5.5358841466903685 | trans loss: 4.276573979854584
+total loss: 5.477987766265869 | trans loss: 4.262435278892517
+total loss: 5.524431662559509 | trans loss: 4.256116886138916
+total loss: 5.467007250785827 | trans loss: 4.241355321407318
+total loss: 5.49419680595398 | trans loss: 4.257487525939942
+total loss: 5.461574497222901 | trans loss: 4.253508424758911
+total loss: 5.445717120170594 | trans loss: 4.227189512252807
+total loss: 5.334151873588562 | trans loss: 4.218769223690033
+total loss: 5.344879240989685 | trans loss: 4.2037577819824214
+total loss: 5.426167035102845 | trans loss: 4.252572762966156
+total loss: 5.339467325210571 | trans loss: 4.220204079151154
+total loss: 5.3326078176498415 | trans loss: 4.198206765651703
+total loss: 5.410529971122742 | trans loss: 4.241017653942108
+total loss: 5.245790767669678 | trans loss: 4.181463096141815
+total loss: 5.34748601436615 | trans loss: 4.18180410861969
+total loss: 5.320401163101196 | trans loss: 4.195566697120666
+total loss: 5.292036442756653 | trans loss: 4.1948989224433895
+total loss: 5.29723892211914 | trans loss: 4.194057292938233
+total loss: 5.253464007377625 | trans loss: 4.187131054401398
+total loss: 5.257597422599792 | trans loss: 4.177143251895904
+total loss: 5.333510775566101 | trans loss: 4.204324331283569
+total loss: 5.288305411338806 | trans loss: 4.173865494728088
+total loss: 5.291956806182862 | trans loss: 4.180193312168122
+total loss: 5.180709290504455 | trans loss: 4.140356817245483
+total loss: 5.1805733823776245 | trans loss: 4.132718892097473
+total loss: 5.213544845581055 | trans loss: 4.149140684604645
+total loss: 5.213622336387634 | trans loss: 4.153625373840332
+total loss: 5.173441991806031 | trans loss: 4.149086005687714
+total loss: 5.19091007232666 | trans loss: 4.149864661693573
+total loss: 5.076106505393982 | trans loss: 4.100381555557251
+total loss: 5.103584470748902 | trans loss: 4.1239336442947385
+total loss: 5.13599392414093 | trans loss: 4.125621933937072
+total loss: 5.119620714187622 | trans loss: 4.111483368873596
+total loss: 5.088742341995239 | trans loss: 4.126365501880645
+total loss: 5.086909399032593 | trans loss: 4.123523805141449
+total loss: 5.109946584701538 | trans loss: 4.115390357971191
+total loss: 5.192034006118774 | trans loss: 4.132777316570282
+total loss: 5.131371483802796 | trans loss: 4.123455574512482
+total loss: 5.073551716804505 | trans loss: 4.1072082567214965
+total loss: 5.097358899116516 | trans loss: 4.107920529842377
+{'collision_loss': np.float64(0.010161358820277033),
+ 'grip_loss': np.float64(0.04949857601305189),
+ 'lr': np.float64(0.0005387785629277852),
+ 'rot_loss_x': np.float64(0.25919501631685893),
+ 'rot_loss_y': np.float64(0.20054498122598255),
+ 'rot_loss_z': np.float64(1.8170995216518875),
+ 'total_loss': np.float64(7.28117352341036),
+ 'trans_loss': np.float64(4.944674077429181)}
+Rank [0], Epoch [1]: Training on train dataset
+ 31%|███▏      | 3199/10208 [59:33<2:12:44,  1.14s/it]
+total loss: 5.099789261817932 | trans loss: 4.088205163478851
+total loss: 5.0318683242797855 | trans loss: 4.107004668712616
+total loss: 5.07174970626831 | trans loss: 4.096981635093689
+total loss: 5.101559844017029 | trans loss: 4.1047158575057985
+total loss: 5.084960246086121 | trans loss: 4.107367115020752
+total loss: 5.091450109481811 | trans loss: 4.103742055892944
+total loss: 5.024567623138427 | trans loss: 4.1124559497833255
+total loss: 5.068790793418884 | trans loss: 4.106170933246613
+total loss: 5.0795277500152585 | trans loss: 4.101250524520874
+total loss: 5.055114636421203 | trans loss: 4.107616493701935
+total loss: 4.963954405784607 | trans loss: 4.091875081062317
+total loss: 5.0628009605407716 | trans loss: 4.093280460834503
+total loss: 4.952615885734558 | trans loss: 4.070905058383942
+total loss: 5.003525991439819 | trans loss: 4.086456546783447
+total loss: 4.94958920955658 | trans loss: 4.072992770671845
+total loss: 5.016306381225586 | trans loss: 4.090987555980682
+total loss: 4.899286017417908 | trans loss: 4.044659576416016
+total loss: 4.927382788658142 | trans loss: 4.062026135921478
+total loss: 4.905418934822083 | trans loss: 4.0366336178779605
+total loss: 5.031038250923157 | trans loss: 4.100778775215149
+total loss: 4.968965148925781 | trans loss: 4.050416796207428
+total loss: 4.9960322666168215 | trans loss: 4.063749685287475
+total loss: 4.983635926246643 | trans loss: 4.061437437534332
+total loss: 4.897272734642029 | trans loss: 4.0568357896804805
+total loss: 4.960665335655213 | trans loss: 4.049537043571473
+total loss: 5.016007876396179 | trans loss: 4.072375435829162
+total loss: 4.907112903594971 | trans loss: 4.049515283107757
+total loss: 4.965010261535644 | trans loss: 4.060554113388061
+total loss: 4.935833196640015 | trans loss: 4.036577248573304
+total loss: 4.9211798715591435 | trans loss: 4.044220705032348
+total loss: 4.910051755905151 | trans loss: 4.0470442914962765
+total loss: 4.899972724914551 | trans loss: 4.03411423921585
+total loss: 4.905983138084411 | trans loss: 4.04916410446167
+total loss: 4.956186909675598 | trans loss: 4.055515255928039
+total loss: 4.908268795013428 | trans loss: 4.033238909244537
+total loss: 4.902099647521973 | trans loss: 4.035372376441956
+total loss: 4.873646650314331 | trans loss: 4.026673262119293
+total loss: 4.854920592308044 | trans loss: 4.040461852550506
+total loss: 4.877288746833801 | trans loss: 4.032731935977936
+total loss: 4.900544605255127 | trans loss: 4.026510462760926
+total loss: 4.855145001411438 | trans loss: 4.029073822498321
+total loss: 4.860304656028748 | trans loss: 4.021766414642334
+total loss: 4.832970156669616 | trans loss: 4.0172012996673585
+total loss: 4.874314303398132 | trans loss: 4.025973627567291
+total loss: 4.819402465820312 | trans loss: 4.000026524066925
+total loss: 4.8284012937545775 | trans loss: 3.996499285697937
+total loss: 4.881678786277771 | trans loss: 4.036737735271454
+total loss: 4.841595726013184 | trans loss: 4.015118558406829
+total loss: 4.835228900909424 | trans loss: 4.027861034870147
+total loss: 4.887084441184998 | trans loss: 4.013367776870727
+total loss: 4.944494390487671 | trans loss: 4.03505530834198
+total loss: 4.829121417999268 | trans loss: 4.01755152463913
+total loss: 4.8617727136611935 | trans loss: 4.015703198909759
+total loss: 4.8113753652572635 | trans loss: 3.997642114162445
+total loss: 4.803448352813721 | trans loss: 4.0021606016159055
+total loss: 4.823957200050354 | trans loss: 3.997768998146057
+total loss: 4.748814988136291 | trans loss: 3.98709921836853
+total loss: 4.748124186992645 | trans loss: 3.9835216331481935
+total loss: 4.810550026893615 | trans loss: 3.9843639278411866
+total loss: 4.802147002220154 | trans loss: 3.986120946407318
+total loss: 4.795366940498352 | trans loss: 4.004301457405091
+total loss: 4.8231325483322145 | trans loss: 3.9931753516197204
+total loss: 4.8113365650177 | trans loss: 4.004199404716491
+total loss: 4.744319944381714 | trans loss: 3.9849606680870058
+total loss: 4.788337922096252 | trans loss: 3.990135807991028
+total loss: 4.723839550018311 | trans loss: 3.971996352672577
+total loss: 4.740464286804199 | trans loss: 3.9776420617103576
+total loss: 4.77517406463623 | trans loss: 3.9796871089935304
+total loss: 4.8057692432403565 | trans loss: 3.9911991119384767
+total loss: 4.773736629486084 | trans loss: 3.9739887619018557
+total loss: 4.778464951515198 | trans loss: 3.973307480812073
+total loss: 4.711374588012696 | trans loss: 3.9630087304115293
+total loss: 4.797102155685425 | trans loss: 3.9688162326812746
+total loss: 4.784915766716003 | trans loss: 3.974367480278015
+total loss: 4.7563241815567014 | trans loss: 3.9685235691070555
+total loss: 4.782939805984497 | trans loss: 3.983686103820801
+total loss: 4.727575330734253 | trans loss: 3.9846882128715517
+total loss: 4.737863116264343 | trans loss: 3.962553563117981
+total loss: 4.748784222602844 | trans loss: 3.981421058177948
+total loss: 4.7666897869110105 | trans loss: 3.963402352333069
+total loss: 4.7440303564071655 | trans loss: 3.9940126037597654
+total loss: 4.73645893573761 | trans loss: 3.960667383670807
+total loss: 4.731988439559936 | trans loss: 3.9602481651306154
+total loss: 4.7079190921783445 | trans loss: 3.969429726600647
+total loss: 4.744867005348206 | trans loss: 3.96706999540329
+total loss: 4.7201178884506225 | trans loss: 3.9577025604248046
+total loss: 4.707652726173401 | trans loss: 3.949874606132507
+total loss: 4.707014112472534 | trans loss: 3.949018409252167
+total loss: 4.724640107154846 | trans loss: 3.958810648918152
+total loss: 4.701622371673584 | trans loss: 3.952682456970215
+total loss: 4.670158686637879 | trans loss: 3.9303219056129457
+total loss: 4.715536799430847 | trans loss: 3.94683474779129
+total loss: 4.670310573577881 | trans loss: 3.9551798415184023
+total loss: 4.679564619064331 | trans loss: 3.938714261054993
+total loss: 4.703324146270752 | trans loss: 3.936604981422424
+total loss: 4.622844295501709 | trans loss: 3.9432980036735534
+total loss: 4.623489108085632 | trans loss: 3.9281192326545717
+total loss: 4.642432203292847 | trans loss: 3.926924424171448
+total loss: 4.675451817512513 | trans loss: 3.9415755391120912
+total loss: 4.593118662834168 | trans loss: 3.923235528469086
+total loss: 4.730048041343689 | trans loss: 3.949228570461273
+total loss: 4.642853074073791 | trans loss: 3.9369603490829466
+{'collision_loss': np.float64(1.0763247649339226e-07),
+ 'grip_loss': np.float64(0.0019466674786059268),
+ 'lr': np.float64(0.0005743011667727653),
+ 'rot_loss_x': np.float64(3.252233021203431e-08),
+ 'rot_loss_y': np.float64(0.00011464977333448024),
+ 'rot_loss_z': np.float64(0.8297017463307746),
+ 'total_loss': np.float64(4.845171656798232),
+ 'trans_loss': np.float64(4.013408499825337)}
+Rank [0], Epoch [2]: Training on train dataset
+ 31%|███▏      | 3199/10208 [1:00:03<2:09:36,  1.11s/it]
+total loss: 4.587923765182495 | trans loss: 3.928824062347412
+total loss: 4.614630072116852 | trans loss: 3.9276816606521607
+total loss: 4.631447308063507 | trans loss: 3.914440379142761
+total loss: 4.662370758056641 | trans loss: 3.927195692062378
+total loss: 4.626325902938842 | trans loss: 3.9195831084251402
+total loss: 4.622267694473266 | trans loss: 3.9278645873069764
+total loss: 4.627220969200135 | trans loss: 3.9276296043395997
+total loss: 4.640579376220703 | trans loss: 3.929512324333191
+total loss: 4.665667405128479 | trans loss: 3.933037884235382
+total loss: 4.611134469509125 | trans loss: 3.9301529932022095
+total loss: 4.590029208660126 | trans loss: 3.8982937955856323
+total loss: 4.573709261417389 | trans loss: 3.9134522342681883
+total loss: 4.653167824745179 | trans loss: 3.91767361164093
+total loss: 4.583531947135925 | trans loss: 3.8926265048980713
+total loss: 4.577279195785523 | trans loss: 3.9069431138038637
+total loss: 4.606023051738739 | trans loss: 3.908544807434082
+total loss: 4.607955417633057 | trans loss: 3.9250883936882017
+total loss: 4.608895831108093 | trans loss: 3.927393977642059
+total loss: 4.590426561832428 | trans loss: 3.908729622364044
+total loss: 4.62650152683258 | trans loss: 3.9224298548698426
+total loss: 4.597668418884277 | trans loss: 3.912623658180237
+total loss: 4.578124260902404 | trans loss: 3.9195048642158508
+total loss: 4.571940922737122 | trans loss: 3.919353709220886
+total loss: 4.620664687156677 | trans loss: 3.9060638403892516
+total loss: 4.54150387763977 | trans loss: 3.895185351371765
+total loss: 4.548581528663635 | trans loss: 3.8862286901473997
+total loss: 4.53797863483429 | trans loss: 3.903516767024994
+total loss: 4.5131127905845645 | trans loss: 3.8848009419441225
+total loss: 4.625585312843323 | trans loss: 3.9028340578079224
+total loss: 4.566238484382629 | trans loss: 3.897705271244049
+total loss: 4.518391559123993 | trans loss: 3.8822780442237854
+total loss: 4.538559381961822 | trans loss: 3.8901154589653015
+total loss: 4.531144409179688 | trans loss: 3.8823029685020445
+total loss: 4.508617196083069 | trans loss: 3.8888997793197633
+total loss: 4.514978239536285 | trans loss: 3.887837212085724
+total loss: 4.514225902557373 | trans loss: 3.8846725988388062
+total loss: 4.569013528823852 | trans loss: 3.894466335773468
+total loss: 4.472662727832795 | trans loss: 3.8801123809814455
+total loss: 4.539310593605041 | trans loss: 3.889526250362396
+total loss: 4.514110760688782 | trans loss: 3.8701212334632875
+total loss: 4.5759537982940675 | trans loss: 3.893342628479004
+total loss: 4.508661794662475 | trans loss: 3.8717815232276918
+total loss: 4.560193433761596 | trans loss: 3.8798799109458924
+total loss: 4.498651242256164 | trans loss: 3.867521116733551
+total loss: 4.529063467979431 | trans loss: 3.8906565356254577
+total loss: 4.545812702178955 | trans loss: 3.885876324176788
+total loss: 4.540379338264465 | trans loss: 3.8691303730010986
+total loss: 4.5145920586586 | trans loss: 3.880657043457031
+total loss: 4.499013047218323 | trans loss: 3.874737546443939
+total loss: 4.534853534698486 | trans loss: 3.8856464290618895
+total loss: 4.488251259326935 | trans loss: 3.86040007352829
+total loss: 4.516592612266541 | trans loss: 3.8856178879737855
+total loss: 4.4838878178596495 | trans loss: 3.86372967004776
+total loss: 4.506053578853607 | trans loss: 3.861553671360016
+total loss: 4.506912930011749 | trans loss: 3.8584782910346984
+total loss: 4.495981712341308 | trans loss: 3.8687297821044924
+total loss: 4.562314665317535 | trans loss: 3.884017376899719
+total loss: 4.46266343832016 | trans loss: 3.866282081604004
+total loss: 4.447330951690674 | trans loss: 3.854553463459015
+total loss: 4.444643647670746 | trans loss: 3.856883623600006
+total loss: 4.428450865745544 | trans loss: 3.847640218734741
+total loss: 4.495899038314819 | trans loss: 3.8542326045036317
+total loss: 4.493808200359345 | trans loss: 3.869315721988678
+total loss: 4.460772495269776 | trans loss: 3.8460934281349184
+total loss: 4.469024829864502 | trans loss: 3.8708608150482178
+total loss: 4.481543564796448 | trans loss: 3.8782911610603334
+total loss: 4.462411212921142 | trans loss: 3.8464431834220885
+total loss: 4.356386725902557 | trans loss: 3.8235738921165465
+total loss: 4.476850781440735 | trans loss: 3.8350704216957094
+total loss: 4.44826851606369 | trans loss: 3.8400104212760926
+total loss: 4.421214873790741 | trans loss: 3.852088763713837
+total loss: 4.439260675907135 | trans loss: 3.847356102466583
+total loss: 4.43790052652359 | trans loss: 3.838760313987732
+total loss: 4.448223073482513 | trans loss: 3.846485450267792
+total loss: 4.4523289275169375 | trans loss: 3.8409722781181337
+total loss: 4.469875128269195 | trans loss: 3.8503436708450316
+total loss: 4.490704531669617 | trans loss: 3.8613064169883726
+total loss: 4.421847071647644 | trans loss: 3.8334838795661925
+total loss: 4.447666301727295 | trans loss: 3.8330955481529236
+total loss: 4.417515497207642 | trans loss: 3.8417506861686705
+total loss: 4.392832047939301 | trans loss: 3.822347888946533
+total loss: 4.414259750843048 | trans loss: 3.8521468162536623
+total loss: 4.4191170597076415 | trans loss: 3.839117755889893
+total loss: 4.373000667095185 | trans loss: 3.8287136244773863
+total loss: 4.4058772826194765 | trans loss: 3.8435651230812073
+total loss: 4.462710235118866 | trans loss: 3.8470332837104797
+total loss: 4.382866806983948 | trans loss: 3.8239193606376647
+total loss: 4.417180216312408 | trans loss: 3.8371145820617674
+total loss: 4.44319506406784 | trans loss: 3.8387591314315794
+total loss: 4.405982429981232 | trans loss: 3.83939510345459
+total loss: 4.414247751235962 | trans loss: 3.832820611000061
+total loss: 4.399699885845184 | trans loss: 3.832376308441162
+total loss: 4.412967519760132 | trans loss: 3.8358360815048216
+total loss: 4.383712871074676 | trans loss: 3.8266973757743834
+total loss: 4.429541499614715 | trans loss: 3.8293643188476563
+total loss: 4.402558901309967 | trans loss: 3.8305717062950135
+total loss: 4.377314188480377 | trans loss: 3.8286340284347533
+total loss: 4.380692458152771 | trans loss: 3.8227696371078492
+total loss: 4.3995021724700925 | trans loss: 3.8190965914726256
+total loss: 4.3834949040412905 | trans loss: 3.8162990283966063
+total loss: 4.408547351360321 | trans loss: 3.8369812679290773
+total loss: 4.42902599811554 | trans loss: 3.8364103388786317
+{'collision_loss': np.float64(1.257343904472539e-07),
+ 'grip_loss': np.float64(0.0007853118598200044),
+ 'lr': np.float64(0.0005246143377917129),
+ 'rot_loss_x': np.float64(8.75851969320735e-11),
+ 'rot_loss_y': np.float64(0.00013302322082643495),
+ 'rot_loss_z': np.float64(0.6306471244766315),
+ 'total_loss': np.float64(4.504121375588414),
+ 'trans_loss': np.float64(3.8725558362877854)}
+Rank [0], Epoch [3]: Training on train dataset
+ 31%|███▏      | 3199/10208 [59:41<2:10:20,  1.12s/it]
+total loss: 4.421064469814301 | trans loss: 3.8229499316215514
+total loss: 4.370063548088074 | trans loss: 3.829837968349457
+total loss: 4.373057990074158 | trans loss: 3.8150234961509706
+total loss: 4.4328562140464784 | trans loss: 3.832312617301941
+total loss: 4.34895229101181 | trans loss: 3.812792131900787
+total loss: 4.362701888084412 | trans loss: 3.8107102489471436
+total loss: 4.411933908462524 | trans loss: 3.821796863079071
+total loss: 4.364408802986145 | trans loss: 3.807238750457764
+total loss: 4.373228890895843 | trans loss: 3.814031095504761
+total loss: 4.352260293960572 | trans loss: 3.8054855990409853
+total loss: 4.341483891010284 | trans loss: 3.806947672367096
+total loss: 4.39551052570343 | trans loss: 3.8176529669761656
+total loss: 4.348620998859405 | trans loss: 3.794100685119629
+total loss: 4.3412966060638425 | trans loss: 3.798267946243286
+total loss: 4.390897519588471 | trans loss: 3.8027259254455568
+total loss: 4.341045360565186 | trans loss: 3.806932315826416
+total loss: 4.318676106929779 | trans loss: 3.805072617530823
+total loss: 4.3527636551857 | trans loss: 3.812386989593506
+total loss: 4.360957014560699 | trans loss: 3.815202121734619
+total loss: 4.361234550476074 | trans loss: 3.8081364321708677
+total loss: 4.375713698863983 | trans loss: 3.81308082818985
+total loss: 4.319590196609497 | trans loss: 3.8007151293754577
+total loss: 4.333207101821899 | trans loss: 3.806420159339905
+total loss: 4.318034424781799 | trans loss: 3.8002678203582763
+total loss: 4.368053331375122 | trans loss: 3.8095487928390503
+total loss: 4.359228851795197 | trans loss: 3.7978082394599912
+total loss: 4.344563508033753 | trans loss: 3.7992807745933534
+total loss: 4.372921679019928 | trans loss: 3.8016658282279967
+total loss: 4.377608036994934 | trans loss: 3.806482915878296
+total loss: 4.325689945220947 | trans loss: 3.8072040939331053
+total loss: 4.310032494068146 | trans loss: 3.799509382247925
+total loss: 4.3008919835090635 | trans loss: 3.7903173565864563
+total loss: 4.331236479282379 | trans loss: 3.796882288455963
+total loss: 4.314159462451935 | trans loss: 3.798110001087189
+total loss: 4.287737383842468 | trans loss: 3.7876983165740965
+total loss: 4.328012349605561 | trans loss: 3.798833923339844
+total loss: 4.319527084827423 | trans loss: 3.7922864675521852
+total loss: 4.31297577381134 | trans loss: 3.792627272605896
+total loss: 4.373151636123657 | trans loss: 3.800806715488434
+total loss: 4.289131338596344 | trans loss: 3.7819031929969786
+total loss: 4.302495052814484 | trans loss: 3.788090500831604
+total loss: 4.331407508850098 | trans loss: 3.7956595420837402
+total loss: 4.3246634221076965 | trans loss: 3.7898455047607422
+total loss: 4.2825200605392455 | trans loss: 3.7913129687309266
+total loss: 4.306144864559173 | trans loss: 3.7908130431175233
+total loss: 4.326636395454407 | trans loss: 3.7914381623268127
+total loss: 4.34889897108078 | trans loss: 3.7879097986221315
+total loss: 4.279180240631104 | trans loss: 3.7948497414588926
+total loss: 4.337188146114349 | trans loss: 3.799191439151764
+total loss: 4.298272411823273 | trans loss: 3.7807331800460817
+total loss: 4.3248711633682255 | trans loss: 3.7902846145629883
+total loss: 4.299236273765564 | trans loss: 3.7925975704193116
+total loss: 4.26475774526596 | trans loss: 3.7882108950614928
+total loss: 4.302380208969116 | trans loss: 3.783049552440643
+total loss: 4.298513805866241 | trans loss: 3.7809553074836733
+total loss: 4.325366451740265 | trans loss: 3.788367900848389
+total loss: 4.296926407814026 | trans loss: 3.782196536064148
+total loss: 4.296248850822448 | trans loss: 3.7848340916633605
+total loss: 4.318724396228791 | trans loss: 3.7850136232376097
+total loss: 4.256802353858948 | trans loss: 3.7746530866622923
+total loss: 4.278597655296326 | trans loss: 3.779787974357605
+total loss: 4.249285709857941 | trans loss: 3.775649254322052
+total loss: 4.2933072662353515 | trans loss: 3.777317385673523
+total loss: 4.283867547512054 | trans loss: 3.7806887674331664
+total loss: 4.233818182945251 | trans loss: 3.769016833305359
+total loss: 4.314804379940033 | trans loss: 3.7843725800514223
+total loss: 4.3137276124954225 | trans loss: 3.7824659085273744
+total loss: 4.249073314666748 | trans loss: 3.776990780830383
+total loss: 4.2556717228889465 | trans loss: 3.762921199798584
+total loss: 4.285598685741425 | trans loss: 3.771647644042969
+total loss: 4.285483648777008 | trans loss: 3.77733957529068
+total loss: 4.289160006046295 | trans loss: 3.7711326766014097
+total loss: 4.258842184543609 | trans loss: 3.782659273147583
+total loss: 4.284222309589386 | trans loss: 3.77658353805542
+total loss: 4.303465685844421 | trans loss: 3.7794062948226927
+total loss: 4.216556575298309 | trans loss: 3.7664844274520872
+total loss: 4.247947878837586 | trans loss: 3.767319431304932
+total loss: 4.299747214317322 | trans loss: 3.7854872274398805
+total loss: 4.268222005367279 | trans loss: 3.7721950602531433
+total loss: 4.254576122760772 | trans loss: 3.7656995987892152
+total loss: 4.303807811737061 | trans loss: 3.770836672782898
+total loss: 4.276689350605011 | trans loss: 3.7677350306510924
+total loss: 4.242134861946106 | trans loss: 3.7730477023124696
+total loss: 4.26249621629715 | trans loss: 3.7732458305358887
+total loss: 4.204340751171112 | trans loss: 3.7582298040390016
+total loss: 4.28710643529892 | trans loss: 3.772569622993469
+total loss: 4.238893761634826 | trans loss: 3.7592045426368714
+total loss: 4.259707992076874 | trans loss: 3.7725521683692933
+total loss: 4.305109066963196 | trans loss: 3.776631577014923
+total loss: 4.282090802192688 | trans loss: 3.7695984506607054
+total loss: 4.247128283977508 | trans loss: 3.7525827217102052
+total loss: 4.274749145507813 | trans loss: 3.7674936151504514
+total loss: 4.231603348255158 | trans loss: 3.757773859500885
+total loss: 4.2621356081962585 | trans loss: 3.7644313645362852
+total loss: 4.2907877969741826 | trans loss: 3.7689848566055297
+total loss: 4.236276123523712 | trans loss: 3.763119385242462
+total loss: 4.219416584968567 | trans loss: 3.763690536022186
+total loss: 4.281774260997772 | trans loss: 3.773296935558319
+total loss: 4.2408401799201965 | trans loss: 3.759278426170349
+total loss: 4.272515127658844 | trans loss: 3.765829474925995
+total loss: 4.266227993965149 | trans loss: 3.7677979135513304
+total loss: 4.244153683185577 | trans loss: 3.7633894515037536
+{'collision_loss': np.float64(1.0704857550722708e-10),
+ 'grip_loss': np.float64(0.0005349875817703547),
+ 'lr': np.float64(0.0004532343533497477),
+ 'rot_loss_x': np.float64(1.0704857759542086e-11),
+ 'rot_loss_y': np.float64(1.5125087483168848e-05),
+ 'rot_loss_z': np.float64(0.5190027386569024),
+ 'total_loss': np.float64(4.307270287112757),
+ 'trans_loss': np.float64(3.7877174741048423)}
+Rank [0], Epoch [4]: Training on train dataset
+ 31%|███▏      | 3199/10208 [59:36<2:10:56,  1.12s/it]
+total loss: 4.213467562198639 | trans loss: 3.7523518204689026
+total loss: 4.265061731338501 | trans loss: 3.763361177444458
+total loss: 4.224109122753143 | trans loss: 3.75997092962265
+total loss: 4.242230958938599 | trans loss: 3.761920909881592
+total loss: 4.215056855678558 | trans loss: 3.7577165579795837
+total loss: 4.233532042503357 | trans loss: 3.760569279193878
+total loss: 4.267700941562652 | trans loss: 3.7606892228126525
+total loss: 4.225269422531128 | trans loss: 3.7526498579978944
+total loss: 4.23672357082367 | trans loss: 3.7577259588241576
+total loss: 4.233342754840851 | trans loss: 3.762349133491516
+total loss: 4.239598214626312 | trans loss: 3.743036005496979
+total loss: 4.234218437671661 | trans loss: 3.759959990978241
+total loss: 4.273636403083802 | trans loss: 3.7652850008010863
+total loss: 4.201192660331726 | trans loss: 3.758339350223541
+total loss: 4.248684630393982 | trans loss: 3.759567563533783
+total loss: 4.224412546157837 | trans loss: 3.760111224651337
+total loss: 4.227904372215271 | trans loss: 3.7558873009681704
+total loss: 4.191514430046081 | trans loss: 3.7503878831863404
+total loss: 4.252275230884552 | trans loss: 3.756680781841278
+total loss: 4.256721658706665 | trans loss: 3.7476947355270385
+total loss: 4.230690507888794 | trans loss: 3.7594496989250183
+total loss: 4.227469539642334 | trans loss: 3.7519807243347167
+total loss: 4.2074496150016785 | trans loss: 3.7419065690040587
+total loss: 4.223470907211304 | trans loss: 3.757976326942444
+total loss: 4.23096453666687 | trans loss: 3.751876530647278
+total loss: 4.201267490386963 | trans loss: 3.7438903307914733
+total loss: 4.20578161239624 | trans loss: 3.74560889005661
+total loss: 4.192649385929108 | trans loss: 3.7441296315193178
+total loss: 4.186898031234741 | trans loss: 3.740265169143677
+total loss: 4.2173091340065 | trans loss: 3.7513138270378112
+total loss: 4.1972598195075985 | trans loss: 3.757501859664917
+total loss: 4.225864961147308 | trans loss: 3.743824989795685
+total loss: 4.216709318161011 | trans loss: 3.7466877031326296
+total loss: 4.185530416965484 | trans loss: 3.749391028881073
+total loss: 4.193702180385589 | trans loss: 3.736613118648529
+total loss: 4.174733889102936 | trans loss: 3.7360965752601625
+total loss: 4.228791658878326 | trans loss: 3.7450565671920777
+total loss: 4.20108950138092 | trans loss: 3.7405772900581358
+total loss: 4.211692481040955 | trans loss: 3.7483370971679686
+total loss: 4.185664393901825 | trans loss: 3.7427668976783752
+total loss: 4.214422416687012 | trans loss: 3.7519756865501406
+total loss: 4.213613710403442 | trans loss: 3.7499785137176516
+total loss: 4.186692237854004 | trans loss: 3.737540457248688
+total loss: 4.21083297252655 | trans loss: 3.747170581817627
+total loss: 4.221548945903778 | trans loss: 3.738653290271759
+total loss: 4.187741396427154 | trans loss: 3.7415180349349977
+total loss: 4.195109663009643 | trans loss: 3.742789423465729
+total loss: 4.190629711151123 | trans loss: 3.7417951941490175
+total loss: 4.212004408836365 | trans loss: 3.7492204689979554
+total loss: 4.194912006855011 | trans loss: 3.7377781796455385
+total loss: 4.196530075073242 | trans loss: 3.736412510871887
+total loss: 4.171552169322967 | trans loss: 3.741439185142517
+total loss: 4.197736256122589 | trans loss: 3.743012795448303
+total loss: 4.1468880128860475 | trans loss: 3.7427723670005797
+total loss: 4.177632412910461 | trans loss: 3.740108730792999
+total loss: 4.1740904760360715 | trans loss: 3.7320237374305725
+total loss: 4.1814576578140255 | trans loss: 3.7349182987213134
+total loss: 4.173273289203644 | trans loss: 3.734527413845062
+total loss: 4.185920963287353 | trans loss: 3.740791440010071
+total loss: 4.232335677146912 | trans loss: 3.7290773153305055
+total loss: 4.176791880130768 | trans loss: 3.7341964530944822
+total loss: 4.185021181106567 | trans loss: 3.727174525260925
+total loss: 4.183256146907806 | trans loss: 3.7378935170173646
+total loss: 4.209026792049408 | trans loss: 3.744988515377045
+total loss: 4.162849543094635 | trans loss: 3.725262942314148
+total loss: 4.164886662960052 | trans loss: 3.730765533447266
+total loss: 4.174265880584716 | trans loss: 3.7304925179481505
+total loss: 4.141105380058288 | trans loss: 3.728818359375
+total loss: 4.190112371444702 | trans loss: 3.7379621696472167
+total loss: 4.182978496551514 | trans loss: 3.7373887705802917
+total loss: 4.16549017906189 | trans loss: 3.7333800077438353
+total loss: 4.170829150676727 | trans loss: 3.7278034234046937
+total loss: 4.142277290821076 | trans loss: 3.7242910623550416
+total loss: 4.1613236784935 | trans loss: 3.7266298055648805
+total loss: 4.169101049900055 | trans loss: 3.7343723130226136
+total loss: 4.178346617221832 | trans loss: 3.7278315258026122
+total loss: 4.176097440719604 | trans loss: 3.735475039482117
+total loss: 4.166146628856659 | trans loss: 3.7243781042099
+total loss: 4.139043810367585 | trans loss: 3.7321210074424744
+total loss: 4.116330811977386 | trans loss: 3.7252512264251707
+total loss: 4.158435628414154 | trans loss: 3.7243245887756347
+total loss: 4.184490535259247 | trans loss: 3.7407090163230894
+total loss: 4.16308093547821 | trans loss: 3.7335794258117674
+total loss: 4.123462138175964 | trans loss: 3.7225927996635435
+total loss: 4.195236797332764 | trans loss: 3.728314700126648
+total loss: 4.160670073032379 | trans loss: 3.729443392753601
+total loss: 4.131899099349976 | trans loss: 3.7249220061302184
+total loss: 4.175341272354126 | trans loss: 3.7179762387275694
+total loss: 4.163154578208923 | trans loss: 3.7324551796913146
+total loss: 4.172529296875 | trans loss: 3.726073589324951
+total loss: 4.150093786716461 | trans loss: 3.731608626842499
+total loss: 4.142536904811859 | trans loss: 3.733103942871094
+total loss: 4.173174180984497 | trans loss: 3.7302342438697815
+total loss: 4.195382418632508 | trans loss: 3.7363328909873963
+total loss: 4.128697497844696 | trans loss: 3.718361396789551
+total loss: 4.15530454158783 | trans loss: 3.7244744515419006
+total loss: 4.156923496723175 | trans loss: 3.7258191537857055
+total loss: 4.154685502052307 | trans loss: 3.727587790489197
+total loss: 4.104904716014862 | trans loss: 3.720662729740143
+total loss: 4.145240416526795 | trans loss: 3.7215398168563842
+total loss: 4.152163877487182 | trans loss: 3.721880626678467
+total loss: 4.163019917011261 | trans loss: 3.728628933429718
+{'collision_loss': np.float64(2.8221898085643984e-11),
+ 'grip_loss': np.float64(0.00018812546868031893),
+ 'lr': np.float64(0.0003671483836575955),
+ 'rot_loss_x': np.float64(0.0),
+ 'rot_loss_y': np.float64(5.6606691176210975e-06),
+ 'rot_loss_z': np.float64(0.4506794667874279),
+ 'total_loss': np.float64(4.191263850042626),
+ 'trans_loss': np.float64(3.7403906235780835)}
+Rank [0], Epoch [5]: Training on train dataset
+ 11%|█         | 1101/10208 [20:36<2:50:25,  1.12s/it]
+total loss: 4.185638155937195 | trans loss: 3.729247283935547
+total loss: 4.161259138584137 | trans loss: 3.7371517062187194
+total loss: 4.145228459835052 | trans loss: 3.72007493019104
+total loss: 4.132599856853485 | trans loss: 3.722324934005737
+total loss: 4.124651598930359 | trans loss: 3.7203839802742005
+total loss: 4.144026470184326 | trans loss: 3.7214968681335447
+total loss: 4.149892268180847 | trans loss: 3.7179100584983824
+total loss: 4.1269709944725035 | trans loss: 3.7195251297950747
+total loss: 4.158802781105042 | trans loss: 3.7153968024253845
+total loss: 4.103928005695343 | trans loss: 3.7292073583602905
+total loss: 4.160779361724853 | trans loss: 3.7248079204559326
+Traceback (most recent call last):
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 437, in <module>
+    experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 373, in experiment
+    out = train(agent, train_dataset, TRAINING_ITERATIONS, log_iter, rank, node_rank, ifwandb=exp_cfg.wandb)
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 85, in train
+    raw_batch = next(data_iter)
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 732, in __next__
+    data = self._next_data()
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1506, in _next_data
+    return self._process_data(data, worker_id)
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1541, in _process_data
+    data.reraise()
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/_utils.py", line 769, in reraise
+    raise exception
+FileNotFoundError: Caught FileNotFoundError in DataLoader worker process 1.
+Original Traceback (most recent call last):
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 349, in _worker_loop
+    data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 42, in fetch
+    data = next(self.dataset_iter)
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/wrappers/pytorch_replay_buffer.py", line 30, in _generator
+    yield self._replay_buffer.sample_transition_batch(pack_in_dict=True, distribution_mode = self._sample_distribution_mode)
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/uniform_replay_buffer_temporal.py", line 935, in sample_transition_batch
+    store = self._get_from_disk(
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/uniform_replay_buffer_temporal.py", line 477, in _get_from_disk
+    with open(join(task_replay_storage_folder, '%d.replay' % task_index), 'rb') as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer/VideoPlaceOrder/176.replay'
+
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 437, in <module>
+[rank0]:     experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 373, in experiment
+[rank0]:     out = train(agent, train_dataset, TRAINING_ITERATIONS, log_iter, rank, node_rank, ifwandb=exp_cfg.wandb)
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 85, in train
+[rank0]:     raw_batch = next(data_iter)
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 732, in __next__
+[rank0]:     data = self._next_data()
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1506, in _next_data
+[rank0]:     return self._process_data(data, worker_id)
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1541, in _process_data
+[rank0]:     data.reraise()
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/_utils.py", line 769, in reraise
+[rank0]:     raise exception
+[rank0]: FileNotFoundError: Caught FileNotFoundError in DataLoader worker process 1.
+[rank0]: Original Traceback (most recent call last):
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 349, in _worker_loop
+[rank0]:     data = fetcher.fetch(index)  # type: ignore[possibly-undefined]
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 42, in fetch
+[rank0]:     data = next(self.dataset_iter)
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/wrappers/pytorch_replay_buffer.py", line 30, in _generator
+[rank0]:     yield self._replay_buffer.sample_transition_batch(pack_in_dict=True, distribution_mode = self._sample_distribution_mode)
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/uniform_replay_buffer_temporal.py", line 935, in sample_transition_batch
+[rank0]:     store = self._get_from_disk(
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/libs/YARR/yarr/replay_buffer/uniform_replay_buffer_temporal.py", line 477, in _get_from_disk
+[rank0]:     with open(join(task_replay_storage_folder, '%d.replay' % task_index), 'rb') as f:
+[rank0]: FileNotFoundError: [Errno 2] No such file or directory: '/nfs/turbo/coe-chaijy-unreplicated/hongzefu/dataset_generate/sam2act/test_buffer/VideoPlaceOrder/176.replay'

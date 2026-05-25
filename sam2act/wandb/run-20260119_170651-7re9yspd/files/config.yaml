@@ -1,0 +1,165 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            2o3ubjc86pb84hn8oa45hxnmedx7yjoh:
+                args:
+                    - --exp_cfg_path
+                    - configs/sam2act.yaml
+                    - --mvt_cfg_path
+                    - mvt/configs/sam2act.yaml
+                    - --exp_cfg_opts
+                    - tasks BinFill train_iter 80000 epochs 10
+                    - --mvt_cfg_opts
+                    - depth 4
+                codePath: sam2act/train.py
+                codePathLocal: train.py
+                cpu_count: 32
+                cpu_count_logical: 32
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "21464350720"
+                        used: "12863258624"
+                email: hongzefu@umich.edu
+                executable: /home/hongzefu/micromamba/envs/sam2act/bin/python3.10
+                git:
+                    commit: bd409f9a132835e57e714b1ae78aaabb52b290e9
+                    remote: https://github.com/thomas-fu-0614/sam2act_historybench.git
+                gpu: NVIDIA A40
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-76f03d17-c53c-cb34-5c9b-67d2b977e5fa
+                host: gl1512.arc-ts.umich.edu
+                memory:
+                    total: "403762868224"
+                os: Linux-4.18.0-553.85.1.el8_10.x86_64-x86_64-with-glibc2.28
+                program: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py
+                python: CPython 3.10.19
+                root: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act
+                slurm:
+                    cluster_name: greatlakes
+                    conf: /var/spool/slurmd.spool/conf-cache/slurm.conf
+                    cpus_on_node: "4"
+                    cpus_per_task: "4"
+                    export_env: ALL
+                    get_user_env: "1"
+                    gpus_on_node: "1"
+                    gpus_per_node: "1"
+                    gtids: "0"
+                    job_account: chaijy2
+                    job_cpus_per_node: "4"
+                    job_end_time: "1768877378"
+                    job_gid: "114466650"
+                    job_gpus: "1"
+                    job_id: "40368197"
+                    job_name: ondemand/sys/dashboard/sys/bc_vscode_server
+                    job_nodelist: gl1512
+                    job_num_nodes: "1"
+                    job_partition: spgpu
+                    job_qos: normal
+                    job_reservation: spgpu_foe_nodes
+                    job_start_time: "1768859378"
+                    job_uid: "114466650"
+                    job_user: hongzefu
+                    jobid: "40368197"
+                    localid: "0"
+                    mem_per_node: "65536"
+                    nnodes: "1"
+                    nodeid: "0"
+                    nodelist: gl1512
+                    oom_kill_step: "0"
+                    prio_process: "0"
+                    procid: "0"
+                    script_context: prolog_task
+                    spank__slurm_spank_option_lua_gpu_cmode: exclusive
+                    submit_dir: /var/www/ood/apps/sys/dashboard
+                    submit_host: gl-ood1.arc-ts.umich.edu
+                    task_pid: "2851835"
+                    tasks_per_node: "1"
+                    topology_addr: gl1512
+                    topology_addr_pattern: node
+                    tres_per_task: cpu=4
+                startedAt: "2026-01-19T22:06:51.603543Z"
+                writerId: 2o3ubjc86pb84hn8oa45hxnmedx7yjoh
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "2":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "3":
+                - 13
+                - 16
+            "4": 3.10.19
+            "5": 0.24.0
+            "6": 4.57.5
+            "12": 0.24.0
+            "13": linux-x86_64
+agent:
+    value: our
+bs:
+    value: 8
+demo:
+    value: 100
+epochs:
+    value: 10
+exp_id:
+    value: sam2act
+exp_name:
+    value: test
+num_workers:
+    value: 5
+peract:
+    value:
+        add_rgc_loss: true
+        amp: true
+        bnb: true
+        lambda_weight_l2: 0.0001
+        lr: 0.0001
+        lr_cos_dec: true
+        num_rotation_classes: 72
+        optimizer_type: lamb
+        same_trans_aug_per_seq: false
+        transform_augmentation: true
+        transform_augmentation_rpy:
+            - 0
+            - 0
+            - 45
+        transform_augmentation_xyz:
+            - 0.125
+            - 0.125
+            - 0.125
+        warmup_steps: 2000
+peract_official:
+    value:
+        cfg_path: configs/peract_official_config.yaml
+resume:
+    value: ""
+rvt:
+    value:
+        gt_hm_sigma: 1.5
+        img_aug: 0
+        move_pc_in_bound: true
+        place_with_mean: false
+sample_distribution_mode:
+    value: task_uniform
+tasks:
+    value: BinFill
+train_iter:
+    value: 80000
+wandb:
+    value: true

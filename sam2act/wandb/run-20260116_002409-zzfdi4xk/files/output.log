@@ -1,0 +1,39 @@
+Start training ...
+Rank [0], Epoch [0]: Training on train dataset
+/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py:627: UserWarning: This DataLoader will create 5 worker processes in total. Our suggested max number of worker in current system is 4, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+  0%|                                                                                                                                                                                                                                                     | 0/2000 [00:00<?, ?it/s]/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/models/sam2act_agent.py:888: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  trans_aug_range=torch.tensor(self._transform_augmentation_xyz),  # 平移增强范围
+  4%|██████████                                                                                                                                                                                                                                  | 85/2000 [00:54<20:28,  1.56it/s]
+Traceback (most recent call last):
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 437, in <module>
+    experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 373, in experiment
+    out = train(agent, train_dataset, TRAINING_ITERATIONS, log_iter, rank, node_rank, ifwandb=exp_cfg.wandb)
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 106, in train
+    return_out = agent.update(**update_args)
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/models/sam2act_agent.py", line 1126, in update
+    self.scaler.scale(total_loss).backward()  # 缩放损失并反向传播（混合精度训练）
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/_tensor.py", line 625, in backward
+    torch.autograd.backward(
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/__init__.py", line 354, in backward
+    _engine_run_backward(
+  File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+KeyboardInterrupt
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 437, in <module>
+[rank0]:     experiment(cmd_args, devices, local_rank, rank, world_size)  # Adjust your experiment function to accept the local rank
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 373, in experiment
+[rank0]:     out = train(agent, train_dataset, TRAINING_ITERATIONS, log_iter, rank, node_rank, ifwandb=exp_cfg.wandb)
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py", line 106, in train
+[rank0]:     return_out = agent.update(**update_args)
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/models/sam2act_agent.py", line 1126, in update
+[rank0]:     self.scaler.scale(total_loss).backward()  # 缩放损失并反向传播（混合精度训练）
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/_tensor.py", line 625, in backward
+[rank0]:     torch.autograd.backward(
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/__init__.py", line 354, in backward
+[rank0]:     _engine_run_backward(
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/graph.py", line 841, in _engine_run_backward
+[rank0]:     return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+[rank0]: KeyboardInterrupt

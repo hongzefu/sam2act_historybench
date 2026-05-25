@@ -1,0 +1,57 @@
+{
+  "os": "Linux-5.15.0-139-generic-x86_64-with-glibc2.31",
+  "python": "CPython 3.10.19",
+  "startedAt": "2026-01-23T20:51:38.628223Z",
+  "args": [
+    "--exp_cfg_path",
+    "configs/sam2act_plus.yaml",
+    "--mvt_cfg_path",
+    "mvt/configs/sam2act_plus.yaml",
+    "--mvt_cfg_opts",
+    "use_memory True",
+    "--exp_cfg_opts",
+    "tasks BinFill train_iter 80000 epochs 10 bs 10 resume /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill-mem-base/model_last.pth exp_id sam2act_plus_binfill exp_name v3"
+  ],
+  "program": "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train_plus.py",
+  "codePath": "sam2act/train_plus.py",
+  "codePathLocal": "train_plus.py",
+  "git": {
+    "remote": "https://github.com/thomas-fu-0614/sam2act_historybench.git",
+    "commit": "bd409f9a132835e57e714b1ae78aaabb52b290e9"
+  },
+  "email": "hongzefu@umich.edu",
+  "root": "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act",
+  "host": "sled-whistler",
+  "executable": "/home/hongzefu/micromamba/envs/sam2act4/bin/python3.10",
+  "cpu_count": 10,
+  "cpu_count_logical": 20,
+  "gpu": "NVIDIA RTX A6000",
+  "gpu_count": 2,
+  "disk": {
+    "/": {
+      "total": "3762930311168",
+      "used": "1664647311360"
+    }
+  },
+  "memory": {
+    "total": "269921304576"
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA RTX A6000",
+      "memoryTotal": "51527024640",
+      "cudaCores": 10752,
+      "architecture": "Ampere",
+      "uuid": "GPU-4c8cf7e7-91af-1b61-4130-615b538ef1cb"
+    },
+    {
+      "name": "NVIDIA RTX A6000",
+      "memoryTotal": "51527024640",
+      "cudaCores": 10752,
+      "architecture": "Ampere",
+      "uuid": "GPU-84281e07-3469-8daa-40f6-9ad40b52d294"
+    }
+  ],
+  "cudaVersion": "13.0",
+  "writerId": "z3h03boemaz61jcp2ho1zpszf1gqu9ad"
+}

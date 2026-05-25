@@ -1,0 +1,184 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            pkq5wk21n9dpy5qcftt6jrfwesy6hesq:
+                args:
+                    - --exp_cfg_path
+                    - configs/sam2act.yaml
+                    - --mvt_cfg_path
+                    - mvt/configs/sam2act.yaml
+                    - --exp_cfg_opts
+                    - tasks close_jar train_iter 16000 epochs 10
+                    - --mvt_cfg_opts
+                    - 'depth 4 '
+                codePath: sam2act/train.py
+                codePathLocal: train.py
+                cpu_count: 32
+                cpu_count_logical: 32
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "21464350720"
+                        used: "13035159552"
+                email: hongzefu@umich.edu
+                executable: /home/hongzefu/micromamba/envs/sam2act/bin/python3.10
+                git:
+                    commit: bd409f9a132835e57e714b1ae78aaabb52b290e9
+                    remote: https://github.com/thomas-fu-0614/sam2act_historybench.git
+                gpu: NVIDIA A40
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-626973a7-2932-5b14-749c-980c109eeb88
+                host: gl1526.arc-ts.umich.edu
+                memory:
+                    total: "540141457408"
+                os: Linux-4.18.0-553.85.1.el8_10.x86_64-x86_64-with-glibc2.28
+                program: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train.py
+                python: CPython 3.10.19
+                root: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act
+                slurm:
+                    cluster_name: greatlakes
+                    conf: /var/spool/slurmd.spool/conf-cache/slurm.conf
+                    cpu_bind: quiet,mask_cpu:0x0000100D
+                    cpu_bind_list: "0x0000100D"
+                    cpu_bind_type: 'mask_cpu:'
+                    cpu_bind_verbose: quiet
+                    cpus_on_node: "4"
+                    cpus_per_task: "4"
+                    distribution: cyclic
+                    export_env: ALL
+                    get_user_env: "1"
+                    gpus_on_node: "1"
+                    gpus_per_node: "1"
+                    gtids: "0"
+                    job_account: chaijy2
+                    job_cpus_per_node: "4"
+                    job_end_time: "1768546281"
+                    job_gid: "114466650"
+                    job_gpus: "0"
+                    job_id: "40133315"
+                    job_name: ondemand/sys/dashboard/sys/bc_vscode_server
+                    job_nodelist: gl1526
+                    job_num_nodes: "1"
+                    job_partition: spgpu
+                    job_qos: normal
+                    job_reservation: spgpu_foe_nodes
+                    job_start_time: "1768535481"
+                    job_uid: "114466650"
+                    job_user: hongzefu
+                    jobid: "40133315"
+                    launch_node_ipaddr: 10.164.10.125
+                    localid: "0"
+                    mem_per_node: "32768"
+                    nnodes: "1"
+                    nodeid: "0"
+                    nodelist: gl1526
+                    nprocs: "1"
+                    ntasks: "1"
+                    oom_kill_step: "0"
+                    prio_process: "0"
+                    procid: "0"
+                    script_context: prolog_task
+                    spank__slurm_spank_option_lua_gpu_cmode: shared
+                    srun_comm_host: 10.164.10.125
+                    srun_comm_port: "60125"
+                    step_gpus: "0"
+                    step_id: "0"
+                    step_launcher_port: "60125"
+                    step_nodelist: gl1526
+                    step_num_nodes: "1"
+                    step_num_tasks: "1"
+                    step_tasks_per_node: "1"
+                    stepid: "0"
+                    submit_dir: /var/www/ood/apps/sys/dashboard
+                    submit_host: gl-ood1.arc-ts.umich.edu
+                    task_pid: "3209579"
+                    tasks_per_node: "1"
+                    topology_addr: gl1526
+                    topology_addr_pattern: node
+                    tres_per_task: cpu=4
+                    umask: "0002"
+                startedAt: "2026-01-16T05:24:09.477457Z"
+                writerId: pkq5wk21n9dpy5qcftt6jrfwesy6hesq
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "2":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "3":
+                - 13
+                - 16
+            "4": 3.10.19
+            "5": 0.24.0
+            "6": 4.57.5
+            "12": 0.24.0
+            "13": linux-x86_64
+agent:
+    value: our
+bs:
+    value: 8
+demo:
+    value: 100
+epochs:
+    value: 10
+exp_id:
+    value: sam2act
+exp_name:
+    value: test
+num_workers:
+    value: 5
+peract:
+    value:
+        add_rgc_loss: true
+        amp: true
+        bnb: true
+        lambda_weight_l2: 0.0001
+        lr: 0.0001
+        lr_cos_dec: true
+        num_rotation_classes: 72
+        optimizer_type: lamb
+        same_trans_aug_per_seq: false
+        transform_augmentation: true
+        transform_augmentation_rpy:
+            - 0
+            - 0
+            - 45
+        transform_augmentation_xyz:
+            - 0.125
+            - 0.125
+            - 0.125
+        warmup_steps: 2000
+peract_official:
+    value:
+        cfg_path: configs/peract_official_config.yaml
+resume:
+    value: ""
+rvt:
+    value:
+        gt_hm_sigma: 1.5
+        img_aug: 0
+        move_pc_in_bound: true
+        place_with_mean: false
+sample_distribution_mode:
+    value: task_uniform
+tasks:
+    value: close_jar
+train_iter:
+    value: 16000
+wandb:
+    value: true

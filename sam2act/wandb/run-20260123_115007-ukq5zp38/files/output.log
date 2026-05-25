@@ -1,0 +1,18 @@
+Start training ...
+[Finish]
+Traceback (most recent call last):
+  File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train_plus.py", line 445, in <module>
+    ddp_utils.cleanup()
+  File "/home/hongzefu/sam2act_historybench/sam2act/utils/ddp_utils.py", line 38, in cleanup
+    dist.destroy_process_group()
+  File "/home/hongzefu/micromamba/envs/sam2act4/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2195, in destroy_process_group
+    pg_to_shutdown.shutdown()
+KeyboardInterrupt
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train_plus.py", line 445, in <module>
+[rank0]:     ddp_utils.cleanup()
+[rank0]:   File "/home/hongzefu/sam2act_historybench/sam2act/utils/ddp_utils.py", line 38, in cleanup
+[rank0]:     dist.destroy_process_group()
+[rank0]:   File "/home/hongzefu/micromamba/envs/sam2act4/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 2195, in destroy_process_group
+[rank0]:     pg_to_shutdown.shutdown()
+[rank0]: KeyboardInterrupt

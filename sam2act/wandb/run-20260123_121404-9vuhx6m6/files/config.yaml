@@ -1,0 +1,127 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            0857nz2mo2c05zb69vxutxjlkupfbkjw:
+                args:
+                    - --exp_cfg_path
+                    - configs/sam2act.yaml
+                    - --mvt_cfg_path
+                    - mvt/configs/sam2act.yaml
+                    - --mvt_cfg_opts
+                    - use_memory True
+                    - --exp_cfg_opts
+                    - tasks BinFill train_iter 160000 epochs 20 bs 10 resume /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill-mem-base/model_last.pth exp_id sam2act_plus_binfill exp_name v3
+                codePath: sam2act/train_plus.py
+                codePathLocal: train_plus.py
+                cpu_count: 10
+                cpu_count_logical: 20
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "3762930311168"
+                        used: "1664623677440"
+                email: hongzefu@umich.edu
+                executable: /home/hongzefu/micromamba/envs/sam2act4/bin/python3.10
+                git:
+                    commit: bd409f9a132835e57e714b1ae78aaabb52b290e9
+                    remote: https://github.com/thomas-fu-0614/sam2act_historybench.git
+                gpu: NVIDIA RTX A6000
+                gpu_count: 2
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "51527024640"
+                      name: NVIDIA RTX A6000
+                      uuid: GPU-4c8cf7e7-91af-1b61-4130-615b538ef1cb
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "51527024640"
+                      name: NVIDIA RTX A6000
+                      uuid: GPU-84281e07-3469-8daa-40f6-9ad40b52d294
+                host: sled-whistler
+                memory:
+                    total: "269921304576"
+                os: Linux-5.15.0-139-generic-x86_64-with-glibc2.31
+                program: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train_plus.py
+                python: CPython 3.10.19
+                root: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act
+                startedAt: "2026-01-23T17:14:04.377196Z"
+                writerId: 0857nz2mo2c05zb69vxutxjlkupfbkjw
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "2":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "3":
+                - 13
+                - 16
+            "4": 3.10.19
+            "5": 0.24.0
+            "6": 4.57.6
+            "12": 0.24.0
+            "13": linux-x86_64
+agent:
+    value: our
+bs:
+    value: 10
+demo:
+    value: 100
+epochs:
+    value: 20
+exp_id:
+    value: sam2act_plus_binfill
+exp_name:
+    value: v3
+num_workers:
+    value: 5
+peract:
+    value:
+        add_rgc_loss: true
+        amp: true
+        bnb: true
+        lambda_weight_l2: 0.0001
+        lr: 0.00025
+        lr_cos_dec: true
+        num_rotation_classes: 72
+        optimizer_type: lamb
+        same_trans_aug_per_seq: false
+        transform_augmentation: true
+        transform_augmentation_rpy:
+            - 0
+            - 0
+            - 45
+        transform_augmentation_xyz:
+            - 0.125
+            - 0.125
+            - 0.125
+        warmup_steps: 2000
+peract_official:
+    value:
+        cfg_path: configs/peract_official_config.yaml
+resume:
+    value: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/runs/sam2act_binfill-mem-base/model_last.pth
+rvt:
+    value:
+        gt_hm_sigma: 1.5
+        img_aug: 0
+        move_pc_in_bound: true
+        place_with_mean: false
+sample_distribution_mode:
+    value: task_uniform
+tasks:
+    value: BinFill
+train_iter:
+    value: 160000
+wandb:
+    value: true

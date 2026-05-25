@@ -1,0 +1,134 @@
+Start training ...
+Rank [0], Epoch [10]: Training on train dataset
+/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/utils/data/dataloader.py:627: UserWarning: This DataLoader will create 5 worker processes in total. Our suggested max number of worker in current system is 4, which is smaller than what this DataLoader is going to create. Please be aware that excessive worker creation might get DataLoader running slow or even freeze, lower the worker number to avoid potential slowness/freeze if necessary.
+  warnings.warn(
+  0%|          | 0/2000 [00:00<?, ?it/s]/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/models/sam2act_agent.py:888: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  trans_aug_range=torch.tensor(self._transform_augmentation_xyz),  # 平移增强范围
+/home/hongzefu/micromamba/envs/sam2act/lib/python3.10/site-packages/torch/autograd/graph.py:841: UserWarning: Grad strides do not match bucket view strides. This may indicate grad was not created according to the gradient layout contract, or that the param's strides changed since DDP was constructed.  This is not an error, but may impair performance.
+grad.sizes() = [64, 256, 1, 1], strides() = [256, 1, 256, 256]
+bucket_view.sizes() = [64, 256, 1, 1], strides() = [256, 1, 1, 1] (Triggered internally at /pytorch/torch/csrc/distributed/c10d/reducer.cpp:334.)
+  return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+100%|██████████| 2000/2000 [40:03<00:00,  1.20s/it]
+total loss: 4.955105385780334 | trans loss: 4.955105385780334
+total loss: 4.304102725982666 | trans loss: 4.304102725982666
+total loss: 4.148954575061798 | trans loss: 4.148954575061798
+total loss: 4.069265856742859 | trans loss: 4.069265856742859
+total loss: 4.003398668766022 | trans loss: 4.003398668766022
+total loss: 4.020095939636231 | trans loss: 4.020095939636231
+total loss: 3.970259211063385 | trans loss: 3.970259211063385
+total loss: 3.946605579853058 | trans loss: 3.946605579853058
+total loss: 3.930162851810455 | trans loss: 3.930162851810455
+total loss: 3.9206859993934633 | trans loss: 3.9206859993934633
+total loss: 3.932788450717926 | trans loss: 3.932788450717926
+total loss: 3.9325817728042605 | trans loss: 3.9325817728042605
+total loss: 3.8965836715698243 | trans loss: 3.8965836715698243
+total loss: 3.915390553474426 | trans loss: 3.915390553474426
+total loss: 3.88082243680954 | trans loss: 3.88082243680954
+total loss: 3.882549045085907 | trans loss: 3.882549045085907
+total loss: 3.8965461349487303 | trans loss: 3.8965461349487303
+total loss: 3.893502731323242 | trans loss: 3.893502731323242
+total loss: 3.8787626791000367 | trans loss: 3.8787626791000367
+total loss: 3.868746650218964 | trans loss: 3.868746650218964
+{'lr': np.float64(1.298556534486493e-05),
+ 'total_loss': np.float64(4.012345546007157),
+ 'trans_loss': np.float64(4.012345546007157)}
+Rank [0], Epoch [11]: Training on train dataset
+100%|██████████| 2000/2000 [39:55<00:00,  1.20s/it]
+total loss: 3.844869315624237 | trans loss: 3.844869315624237
+total loss: 3.876984441280365 | trans loss: 3.876984441280365
+total loss: 3.8892723727226257 | trans loss: 3.8892723727226257
+total loss: 3.860037386417389 | trans loss: 3.860037386417389
+total loss: 3.861448724269867 | trans loss: 3.861448724269867
+total loss: 3.8485709857940673 | trans loss: 3.8485709857940673
+total loss: 3.8615570521354674 | trans loss: 3.8615570521354674
+total loss: 3.859985179901123 | trans loss: 3.859985179901123
+total loss: 3.8479067635536195 | trans loss: 3.8479067635536195
+total loss: 3.8659621143341063 | trans loss: 3.8659621143341063
+total loss: 3.847090525627136 | trans loss: 3.847090525627136
+total loss: 3.8370278382301333 | trans loss: 3.8370278382301333
+total loss: 3.8427461695671083 | trans loss: 3.8427461695671083
+total loss: 3.8194481778144835 | trans loss: 3.8194481778144835
+total loss: 3.8466381573677064 | trans loss: 3.8466381573677064
+total loss: 3.8223588967323305 | trans loss: 3.8223588967323305
+total loss: 3.834193925857544 | trans loss: 3.834193925857544
+total loss: 3.8315933871269228 | trans loss: 3.8315933871269228
+total loss: 3.8308207631111144 | trans loss: 3.8308207631111144
+total loss: 3.814550850391388 | trans loss: 3.814550850391388
+{'lr': np.float64(1.2996001785478423e-05),
+ 'total_loss': np.float64(3.847153151392937),
+ 'trans_loss': np.float64(3.847153151392937)}
+Rank [0], Epoch [12]: Training on train dataset
+100%|██████████| 2000/2000 [39:54<00:00,  1.20s/it]
+total loss: 3.8031246495246886 | trans loss: 3.8031246495246886
+total loss: 3.7840523171424865 | trans loss: 3.7840523171424865
+total loss: 3.794760813713074 | trans loss: 3.794760813713074
+total loss: 3.795776743888855 | trans loss: 3.795776743888855
+total loss: 3.7964568305015565 | trans loss: 3.7964568305015565
+total loss: 3.7796538281440735 | trans loss: 3.7796538281440735
+total loss: 3.7958537936210632 | trans loss: 3.7958537936210632
+total loss: 3.786510052680969 | trans loss: 3.786510052680969
+total loss: 3.781005096435547 | trans loss: 3.781005096435547
+total loss: 3.7730616307258606 | trans loss: 3.7730616307258606
+total loss: 3.7611482310295106 | trans loss: 3.7611482310295106
+total loss: 3.7649480223655702 | trans loss: 3.7649480223655702
+total loss: 3.770435230731964 | trans loss: 3.770435230731964
+total loss: 3.757392702102661 | trans loss: 3.757392702102661
+total loss: 3.7659343838691712 | trans loss: 3.7659343838691712
+total loss: 3.7550842905044557 | trans loss: 3.7550842905044557
+total loss: 3.7584882760047913 | trans loss: 3.7584882760047913
+total loss: 3.7510979652404783 | trans loss: 3.7510979652404783
+total loss: 3.750512592792511 | trans loss: 3.750512592792511
+total loss: 3.7519250226020815 | trans loss: 3.7519250226020815
+{'lr': np.float64(5.376885430175974e-05),
+ 'total_loss': np.float64(3.7738611236810686),
+ 'trans_loss': np.float64(3.7738611236810686)}
+Rank [0], Epoch [13]: Training on train dataset
+100%|██████████| 2000/2000 [40:02<00:00,  1.20s/it]
+total loss: 3.7602983140945434 | trans loss: 3.7602983140945434
+total loss: 3.741838803291321 | trans loss: 3.741838803291321
+total loss: 3.7470451521873476 | trans loss: 3.7470451521873476
+total loss: 3.7361791253089907 | trans loss: 3.7361791253089907
+total loss: 3.7382769989967346 | trans loss: 3.7382769989967346
+total loss: 3.7333331894874573 | trans loss: 3.7333331894874573
+total loss: 3.735466628074646 | trans loss: 3.735466628074646
+total loss: 3.736394712924957 | trans loss: 3.736394712924957
+total loss: 3.7492009687423704 | trans loss: 3.7492009687423704
+total loss: 3.742099997997284 | trans loss: 3.742099997997284
+total loss: 3.7447920846939087 | trans loss: 3.7447920846939087
+total loss: 3.7486619114875794 | trans loss: 3.7486619114875794
+total loss: 3.730145878791809 | trans loss: 3.730145878791809
+total loss: 3.7358993029594423 | trans loss: 3.7358993029594423
+total loss: 3.7408862495422364 | trans loss: 3.7408862495422364
+total loss: 3.7194228649139403 | trans loss: 3.7194228649139403
+total loss: 3.725396361351013 | trans loss: 3.725396361351013
+total loss: 3.7265032029151914 | trans loss: 3.7265032029151914
+total loss: 3.725090322494507 | trans loss: 3.725090322494507
+total loss: 3.7367094683647157 | trans loss: 3.7367094683647157
+{'lr': np.float64(0.00012957316749687768),
+ 'total_loss': np.float64(3.7376820769309997),
+ 'trans_loss': np.float64(3.7376820769309997)}
+Rank [0], Epoch [14]: Training on train dataset
+100%|██████████| 2000/2000 [40:10<00:00,  1.21s/it]
+total loss: 3.7261391830444337 | trans loss: 3.7261391830444337
+total loss: 3.7156342673301697 | trans loss: 3.7156342673301697
+total loss: 3.722672281265259 | trans loss: 3.722672281265259
+total loss: 3.732880651950836 | trans loss: 3.732880651950836
+total loss: 3.7193884110450743 | trans loss: 3.7193884110450743
+total loss: 3.7304781675338745 | trans loss: 3.7304781675338745
+total loss: 3.7285447692871094 | trans loss: 3.7285447692871094
+total loss: 3.731882321834564 | trans loss: 3.731882321834564
+total loss: 3.7203626942634584 | trans loss: 3.7203626942634584
+total loss: 3.7047343945503233 | trans loss: 3.7047343945503233
+total loss: 3.7181360292434693 | trans loss: 3.7181360292434693
+total loss: 3.7245469903945922 | trans loss: 3.7245469903945922
+total loss: 3.7164079642295835 | trans loss: 3.7164079642295835
+total loss: 3.7331565165519716 | trans loss: 3.7331565165519716
+total loss: 3.7098669695854185 | trans loss: 3.7098669695854185
+total loss: 3.731739764213562 | trans loss: 3.731739764213562
+total loss: 3.7271244597434996 | trans loss: 3.7271244597434996
+total loss: 3.7296533036231994 | trans loss: 3.7296533036231994
+total loss: 3.7206975960731508 | trans loss: 3.7206975960731508
+total loss: 3.724799373149872 | trans loss: 3.724799373149872
+{'lr': np.float64(0.0002297540298052359),
+ 'total_loss': np.float64(3.723442305445671),
+ 'trans_loss': np.float64(3.723442305445671)}

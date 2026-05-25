@@ -1,0 +1,7 @@
+{"time":"2026-01-21T21:50:43.461107944-05:00","level":"INFO","msg":"stream: starting","core version":"0.24.0"}
+{"time":"2026-01-21T21:50:43.67585372-05:00","level":"INFO","msg":"stream: created new stream","id":"xhcjjln5"}
+{"time":"2026-01-21T21:50:43.675918968-05:00","level":"INFO","msg":"handler: started","stream_id":"xhcjjln5"}
+{"time":"2026-01-21T21:50:43.679180136-05:00","level":"INFO","msg":"stream: started","id":"xhcjjln5"}
+{"time":"2026-01-21T21:50:43.679289967-05:00","level":"INFO","msg":"writer: started","stream_id":"xhcjjln5"}
+{"time":"2026-01-21T21:50:43.679294995-05:00","level":"INFO","msg":"sender: started","stream_id":"xhcjjln5"}
+{"time":"2026-01-22T04:49:59.12775926-05:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/hongzefu-university-of-michigan/sam2act/xhcjjln5/file_stream\": unexpected EOF"}

@@ -1,0 +1,200 @@
+_wandb:
+    value:
+        cli_version: 0.24.0
+        e:
+            jgyi8epb76bp6v9avbct1o56djmnh0ie:
+                args:
+                    - --exp_cfg_path
+                    - configs/sam2act_plus.yaml
+                    - --mvt_cfg_path
+                    - mvt/configs/sam2act_plus.yaml
+                    - --mvt_cfg_opts
+                    - use_memory True
+                    - --exp_cfg_opts
+                    - tasks BinFill train_iter 80000 epochs 10 bs 20 exp_id sam2act_plus_binfill exp_name v3
+                codePath: sam2act/train_plus.py
+                codePathLocal: train_plus.py
+                cpu_count: 32
+                cpu_count_logical: 32
+                cudaVersion: "13.0"
+                disk:
+                    /:
+                        total: "21464350720"
+                        used: "12937756672"
+                email: hongzefu@umich.edu
+                executable: /home/hongzefu/micromamba/envs/sam2act/bin/python3.10
+                git:
+                    commit: bd409f9a132835e57e714b1ae78aaabb52b290e9
+                    remote: https://github.com/thomas-fu-0614/sam2act_historybench.git
+                gpu: NVIDIA A40
+                gpu_count: 4
+                gpu_nvidia:
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-cf9b81bb-b37c-74a1-8226-209cd797eee8
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-b86d3e5b-160e-929d-f351-07ef89cdf26d
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-15061934-9157-e253-a850-2f7256556352
+                    - architecture: Ampere
+                      cudaCores: 10752
+                      memoryTotal: "48305799168"
+                      name: NVIDIA A40
+                      uuid: GPU-ea228890-a500-86df-26e0-fde281ba8570
+                host: gl1524.arc-ts.umich.edu
+                memory:
+                    total: "403805470720"
+                os: Linux-4.18.0-553.85.1.el8_10.x86_64-x86_64-with-glibc2.28
+                program: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act/train_plus.py
+                python: CPython 3.10.19
+                root: /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench/sam2act
+                slurm:
+                    cluster_name: greatlakes
+                    conf: /var/spool/slurmd.spool/conf-cache/slurm.conf
+                    cpu_bind: quiet,mask_cpu:0x30003000
+                    cpu_bind_list: "0x30003000"
+                    cpu_bind_type: 'mask_cpu:'
+                    cpu_bind_verbose: quiet
+                    cpus_on_node: "4"
+                    cpus_per_task: "4"
+                    distribution: cyclic
+                    export_env: ALL
+                    get_user_env: "1"
+                    gpus_on_node: "4"
+                    gpus_per_node: "4"
+                    gtids: "0"
+                    job_account: chaijy2
+                    job_cpus_per_node: "4"
+                    job_end_time: "1769274703"
+                    job_gid: "114466650"
+                    job_gpus: 1,2,3,4
+                    job_id: "40780240"
+                    job_name: sam2act-plus-binfill
+                    job_nodelist: gl1524
+                    job_num_nodes: "1"
+                    job_partition: spgpu
+                    job_qos: normal
+                    job_reservation: spgpu_foe_nodes
+                    job_start_time: "1769202703"
+                    job_uid: "114466650"
+                    job_user: hongzefu
+                    jobid: "40780240"
+                    launch_node_ipaddr: 10.164.10.123
+                    localid: "0"
+                    mem_per_node: "65536"
+                    nnodes: "1"
+                    nodeid: "0"
+                    nodelist: gl1524
+                    nprocs: "1"
+                    ntasks: "1"
+                    ntasks_per_node: "1"
+                    oom_kill_step: "0"
+                    prio_process: "0"
+                    procid: "0"
+                    script_context: prolog_task
+                    srun_comm_host: 10.164.10.123
+                    srun_comm_port: "62413"
+                    step_gpus: 1,2,3,4
+                    step_id: "0"
+                    step_launcher_port: "62413"
+                    step_nodelist: gl1524
+                    step_num_nodes: "1"
+                    step_num_tasks: "1"
+                    step_tasks_per_node: "1"
+                    stepid: "0"
+                    submit_dir: /nfs/turbo/coe-chaijy-unreplicated/hongzefu
+                    submit_host: gl3049.arc-ts.umich.edu
+                    task_pid: "3050959"
+                    tasks_per_node: "1"
+                    topology_addr: gl1524
+                    topology_addr_pattern: node
+                    tres_per_task: cpu=4
+                    umask: "0002"
+                startedAt: "2026-01-23T21:12:25.879111Z"
+                writerId: jgyi8epb76bp6v9avbct1o56djmnh0ie
+        m: []
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "2":
+                - 1
+                - 11
+                - 41
+                - 49
+                - 50
+            "3":
+                - 13
+                - 16
+                - 61
+            "4": 3.10.19
+            "5": 0.24.0
+            "6": 4.57.5
+            "12": 0.24.0
+            "13": linux-x86_64
+agent:
+    value: our
+bs:
+    value: 20
+demo:
+    value: 100
+epochs:
+    value: 10
+exp_id:
+    value: sam2act_plus_binfill
+exp_name:
+    value: v3
+num_workers:
+    value: 5
+peract:
+    value:
+        add_rgc_loss: true
+        amp: true
+        bnb: true
+        lambda_weight_l2: 0.0001
+        lr: 0.0001
+        lr_cos_dec: true
+        num_rotation_classes: 72
+        optimizer_type: lamb
+        same_trans_aug_per_seq: false
+        transform_augmentation: true
+        transform_augmentation_rpy:
+            - 0
+            - 0
+            - 45
+        transform_augmentation_xyz:
+            - 0.125
+            - 0.125
+            - 0.125
+        warmup_steps: 2000
+peract_official:
+    value:
+        cfg_path: configs/peract_official_config.yaml
+resume:
+    value: ""
+rvt:
+    value:
+        gt_hm_sigma: 1.5
+        img_aug: 0
+        move_pc_in_bound: true
+        place_with_mean: false
+sample_distribution_mode:
+    value: demo_uniform_temporal
+tasks:
+    value: BinFill
+train_iter:
+    value: 80000
+wandb:
+    value: true

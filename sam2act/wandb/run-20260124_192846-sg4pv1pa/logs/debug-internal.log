@@ -1,0 +1,8 @@
+{"time":"2026-01-24T19:28:47.106276891-05:00","level":"INFO","msg":"stream: starting","core version":"0.24.0"}
+{"time":"2026-01-24T19:28:47.326556086-05:00","level":"INFO","msg":"stream: created new stream","id":"sg4pv1pa"}
+{"time":"2026-01-24T19:28:47.326632374-05:00","level":"INFO","msg":"handler: started","stream_id":"sg4pv1pa"}
+{"time":"2026-01-24T19:28:47.335466353-05:00","level":"INFO","msg":"stream: started","id":"sg4pv1pa"}
+{"time":"2026-01-24T19:28:47.335601304-05:00","level":"INFO","msg":"writer: started","stream_id":"sg4pv1pa"}
+{"time":"2026-01-24T19:28:47.335618023-05:00","level":"INFO","msg":"sender: started","stream_id":"sg4pv1pa"}
+{"time":"2026-01-26T09:57:27.884832207-05:00","level":"INFO","msg":"api: retrying HTTP error","status":500,"url":"https://api.wandb.ai/files/hongzefu-university-of-michigan/sam2act/sg4pv1pa/file_stream","body":"{\"error\":\"context deadline exceeded\"}"}
+{"time":"2026-01-26T14:27:32.580783796-05:00","level":"INFO","msg":"api: retrying HTTP error","status":502,"url":"https://api.wandb.ai/files/hongzefu-university-of-michigan/sam2act/sg4pv1pa/file_stream","body":"\n<html><head>\n<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\n<title>502 Server Error</title>\n</head>\n<body text=#000000 bgcolor=#ffffff>\n<h1>Error: Server Error</h1>\n<h2>The server encountered a temporary error and could not complete your request.<p>Please try again in 30 seconds.</h2>\n<h2></h2>\n</body></html>\n"}

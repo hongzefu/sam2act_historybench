@@ -1,0 +1,12 @@
+{"time":"2026-01-22T16:27:44.673458941-05:00","level":"INFO","msg":"stream: starting","core version":"0.24.0"}
+{"time":"2026-01-22T16:27:44.995355456-05:00","level":"INFO","msg":"stream: created new stream","id":"caz1ttlg"}
+{"time":"2026-01-22T16:27:44.995452365-05:00","level":"INFO","msg":"handler: started","stream_id":"caz1ttlg"}
+{"time":"2026-01-22T16:27:44.999603788-05:00","level":"INFO","msg":"stream: started","id":"caz1ttlg"}
+{"time":"2026-01-22T16:27:44.999691581-05:00","level":"INFO","msg":"writer: started","stream_id":"caz1ttlg"}
+{"time":"2026-01-22T16:27:44.999708825-05:00","level":"INFO","msg":"sender: started","stream_id":"caz1ttlg"}
+{"time":"2026-01-22T19:20:15.471437554-05:00","level":"INFO","msg":"api: retrying HTTP error","status":502,"url":"https://api.wandb.ai/files/hongzefu-university-of-michigan/sam2act/caz1ttlg/file_stream","body":"\n<html><head>\n<meta http-equiv=\"content-type\" content=\"text/html;charset=utf-8\">\n<title>502 Server Error</title>\n</head>\n<body text=#000000 bgcolor=#ffffff>\n<h1>Error: Server Error</h1>\n<h2>The server encountered a temporary error and could not complete your request.<p>Please try again in 30 seconds.</h2>\n<h2></h2>\n</body></html>\n"}
+{"time":"2026-01-22T21:45:35.024934358-05:00","level":"INFO","msg":"stream: closing","id":"caz1ttlg"}
+{"time":"2026-01-22T21:45:35.334330771-05:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-01-22T21:45:35.54530311-05:00","level":"INFO","msg":"handler: closed","stream_id":"caz1ttlg"}
+{"time":"2026-01-22T21:45:35.547403451-05:00","level":"INFO","msg":"sender: closed","stream_id":"caz1ttlg"}
+{"time":"2026-01-22T21:45:35.547424036-05:00","level":"INFO","msg":"stream: closed","id":"caz1ttlg"}
