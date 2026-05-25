@@ -9,7 +9,8 @@
 
 - **必须用中文和用户沟通。** 所有回复、解释、总结一律用中文。
 - **服务端（推理）环境必须用 `uv` 管理**（`uv lock` + `uv sync`，见第 3 节），不要 `pip install` 临时塞包。依赖锁在 `pyproject.toml` + `uv.lock`。
-- **客户端（仿真+评测）用全新独立 micromamba 环境 `sam2act-robomme-eval`**，按 robomme_policy_learning 的 `examples/robomme/readme.md` 装（见第 3 节）。**不再用旧的 `maniskillenv1028`**。
+- **客户端（仿真+评测）用独立 micromamba 环境 `sam2act-robomme-eval`**，一键脚本 `examples/sam2act/setup_env.sh`（见第 3 节）。**不再用旧的 `maniskillenv1028`；也不再依赖独立仓库 `/data/.../robomme_policy_learning-vqa-test`——客户端三件套已并入本仓库（见下）。**
+- **本仓库已按 robomme_policy_learning 组织形式合并**：`examples/sam2act/`（评测客户端）+ `third_party/robomme_benchmark`（submodule）+ `packages/openpi-client`，与服务端 `sam2act/` 同处一个代码库，uv + micromamba 两套环境一并管理。
 - **SAM2Act 是离散 waypoint（关键帧）策略：必须用 robomme 的 `action_space="waypoint"`，由 benchmark 内置 planner 执行，绝不自己写运动规划器。**
 
 ---
@@ -21,7 +22,7 @@
 | 角色 | 位置 / 环境 | 职责 |
 | --- | --- | --- |
 | **WS 推理服务端**（SAM2Act 权重） | 本仓库 `/nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench`，repo **uv `.venv`**（torch 2.5.1） | `serve_policy.py` 加载 checkpoint，WS 暴露 `reset` / `add_buffer` / `infer`（默认 :8001，被占就换端口如 8011） |
-| **评测客户端**（sim + 编排） | `/data/hongzefu/robomme_policy_learning-vqa-test/examples/sam2act/`，micromamba **`sam2act-robomme-eval`**（torch 2.9.1 + ManiSkill + robomme + openpi-client） | `robomme.BenchmarkEnvBuilder(action_space="waypoint")` 跑 16 任务；`env_runner` 适配器是 WS 客户端 |
+| **评测客户端**（sim + 编排） | 本仓库 `examples/sam2act/`，micromamba **`sam2act-robomme-eval`**（torch 2.9.1 + ManiSkill + robomme + openpi-client） | `robomme.BenchmarkEnvBuilder(action_space="waypoint")` 跑 16 任务；`env_runner` 适配器是 WS 客户端 |
 
 数据流：`env.reset()` 跑完**演示段** → 采样 demo 帧 `add_buffer` 喂服务端积累记忆 → 评测段每步 `env.unwrapped.get_obs()` → `infer` 拿 **9 维动作** `[x,y,z, qw,qx,qy,qz, grip, coll]` → 客户端转 **7 维 waypoint** `[x,y,z, rpy, grip(-1/+1)]` → `env.step()`（**内置 screw→RRT\* planner 执行**）→ 读 `info["status"]` 判成败。
 
@@ -69,18 +70,17 @@ bash sam2act/historybench_eval/infer_env/setup_venv.sh   # 打印 OK: from sam2a
 # 若改过依赖（如加 ws/msgpack）：uv lock && uv sync
 ```
 
-### 3b. 客户端环境（micromamba `sam2act-robomme-eval`）——按 robomme_policy_learning readme
+### 3b. 客户端环境（micromamba `sam2act-robomme-eval`）——本仓库 `examples/sam2act/setup_env.sh`
+一键重建（与服务端 `infer_env/setup_venv.sh` 对称，两套环境都在本仓库内）：
 ```bash
-ENV=sam2act-robomme-eval
-REPO=/data/hongzefu/robomme_policy_learning-vqa-test
-micromamba create -n $ENV python=3.11 -y
-micromamba run -n $ENV pip install torch==2.9.1 torchvision==0.24.1 moviepy==2.2.1 ninja==1.13.0 setuptools==80.9.0 \
-  websockets msgpack "git+https://github.com/YinpeiDai/ManiSkill.git@dev"
-micromamba run -n $ENV pip install -e $REPO/third_party/robomme_benchmark
-micromamba run -n $ENV pip install -e $REPO/packages/openpi-client
+bash examples/sam2act/setup_env.sh
+# 内部：确保 submodule 初始化 → micromamba create -n sam2act-robomme-eval python=3.11
+#       → pip install torch==2.9.1 ... websockets msgpack ManiSkill(RoboMME fork)
+#       → pip install -e third_party/robomme_benchmark + packages/openpi-client → 校验 import
 ```
 - SAM2Act 用 Null 子目标，**精简掉**了 readme 里 VLM 子目标依赖（ms_swift/deepspeed/google-*/flash-attn）。
-- robomme 包即 `$REPO/third_party/robomme_benchmark`（submodule 已初始化），test split 元数据在包内 `env_metadata/test/`。
+- robomme 包即本仓库 `third_party/robomme_benchmark`：**git submodule，从 canonical `git@github.com:RoboMME/robomme_benchmark.git` pin 在 `856bc3a`（== `RoboMME/robomme_policy_learning` main 记录的 submodule 版本）**；test split 元数据在包内 `env_metadata/test/`。首次克隆需 `git submodule update --init`（setup 脚本会自动初始化）。
+- openpi-client 即本仓库 `packages/openpi-client`。
 - micromamba 二进制：`/home/hongzefu/.local/bin/micromamba`（`MAMBA_ROOT_PREFIX=/home/hongzefu/micromamba`）。
 
 ---
@@ -89,8 +89,9 @@ micromamba run -n $ENV pip install -e $REPO/packages/openpi-client
 
 一键编排（tmux 双窗口，镜像 robomme `scripts/eval.sh`）：
 ```bash
-bash /data/hongzefu/robomme_policy_learning-vqa-test/examples/sam2act/run_eval.sh
-# 内含参数：MODEL=sam2act_plus_all_v4/model_plus_last.pth，GPU_server/GPU_client，ONLY_TASKS=BinFill，MAX_EPISODES=5
+cd /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench
+bash examples/sam2act/run_eval.sh
+# 内含参数：单一 REPO=本仓库，MODEL=sam2act_plus_all_v4/model_plus_last.pth，GPU_server/GPU_client，ONLY_TASKS=BinFill，MAX_EPISODES=5
 ```
 
 或手动两步：
@@ -109,7 +110,7 @@ CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bi
 
 ### Step 2 — 跑评测客户端（`sam2act-robomme-eval`）
 ```bash
-cd /data/hongzefu/robomme_policy_learning-vqa-test
+cd /nfs/turbo/coe-chaijy-unreplicated/hongzefu/sam2act_historybench
 CUDA_VISIBLE_DEVICES=1 /home/hongzefu/.local/bin/micromamba run -n sam2act-robomme-eval \
   python examples/sam2act/eval.py --host 127.0.0.1 --port 8011 \
   --only_tasks BinFill --max_episodes 5 --max_steps 40 --history_frames 16
@@ -134,6 +135,7 @@ CUDA_VISIBLE_DEVICES=1 /home/hongzefu/.local/bin/micromamba run -n sam2act-robom
   >   - **9 个 demo-rich 任务**（task_list 含 `demonstration=True` 步：MoveCube / InsertPeg / PatternLock / RouteStick / VideoPlaceButton / VideoPlaceOrder / VideoRepick / VideoUnmask / VideoUnmaskSwap）→ `DemonstrationWrapper.get_demonstration_trajectory()` 用内置 planner 跑出**稠密** `maniskill_obs`（实测 MoveCube ep0=247 帧、ep1=227 帧），`--history_frames` 采样后稠密灌种;
   >   - **7 个无演示任务**（task_list 全 `demonstration=False`：BinFill / ButtonUnmask / ButtonUnmaskSwap / PickHighlight / PickXtimes / StopCube / SwingXtimes）→ 只返回 1 帧 init,SAM2Act+ 记忆靠评测循环 `infer→act` 逐步累积。这是 robomme **有意设计**(这些任务无机器人演示;`env_metadata/test/` 只存每集 seed/难度,**无录制轨迹**可补)。
   > ✅ demo-rich 稠密灌种链路已**端到端验证**(2026-05-25, `sam2act_plus_all_v4/model_plus_last.pth`)：MoveCube 客户端日志 `feeding 16/247` + 服务端 `[SAM2ActPolicy] add_buffer: fed 16 demo frames into memory`;BinFill 为 `feeding 1/1`。两任务 success/fail/timeout 均正常。
+- **2026-05-25 单仓库合并 · 严格一致性验证**：客户端三件套（`examples/sam2act` + `third_party/robomme_benchmark` submodule@`856bc3a` + `packages/openpi-client`）从旧独立仓库 `/data/.../robomme_policy_learning-vqa-test` 并入本仓库，**仅"搬家 + 改路径"、逻辑零改动**。合并前后对**同一** 8011 服务端（`sam2act_plus_all_v4/model_plus_last.pth`，`--seed 0`）跑全 **16 任务 × 1 集**：**16/16 任务 `status`+`steps` 逐一全等**（5/16 success：BinFill·ButtonUnmask·PickHighlight·VideoPlaceOrder·MoveCube；其余 fail/timeout），确认合并无行为漂移。
 
 ### 16 个 HistoryBench / RoboMME 任务
 `PickXtimes, StopCube, SwingXtimes, BinFill, VideoUnmaskSwap, VideoUnmask, ButtonUnmaskSwap, ButtonUnmask, VideoRepick, VideoPlaceButton, VideoPlaceOrder, PickHighlight, InsertPeg, MoveCube, PatternLock, RouteStick`
