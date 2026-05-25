@@ -130,7 +130,10 @@ CUDA_VISIBLE_DEVICES=1 /home/hongzefu/.local/bin/micromamba run -n sam2act-robom
 - 旧 historybench + 自写 planner（已弃用）：`sam2act_plus_all_v4` 在 BinFill test 10ep = 4/10。
 - 新 robomme + waypoint 链路（`sam2act_plus_all_v4/model_plus_last.pth`，2026-05-24 验证）：**BinFill test 5ep = 1/5（easy 1/3, medium 0/1, hard 0/1）**。三种判定（success/fail/timeout）均正常，每集执行 10–40 个 waypoint 经内置 planner。
   > ⚠ 换成第三方 robomme 包后 env 定义/seed/成功判定与旧 historybench 不同，**与旧 4/10 基线不可直接比较**。
-  > ⚠ robomme 的 `env.reset()` 每个 list 只返回 1 帧（非 historybench 的稠密 demo 轨迹），故 demo 记忆只喂 1 帧种子；SAM2Act+ 记忆主要靠评测循环里每次 `infer→act` 逐步累积。若要给记忆型任务喂更多 demo 帧，需另查 robomme demo 录制粒度。
+  > ⚠ robomme 的 `env.reset()` demo 稠密度**按任务二分**（2026-05-25 实测订正；早先"每个 list 只返回 1 帧"是只在 BinFill 上探出的以偏概全）：
+  >   - **9 个 demo-rich 任务**（task_list 含 `demonstration=True` 步：MoveCube / InsertPeg / PatternLock / RouteStick / VideoPlaceButton / VideoPlaceOrder / VideoRepick / VideoUnmask / VideoUnmaskSwap）→ `DemonstrationWrapper.get_demonstration_trajectory()` 用内置 planner 跑出**稠密** `maniskill_obs`（实测 MoveCube ep0=247 帧、ep1=227 帧），`--history_frames` 采样后稠密灌种;
+  >   - **7 个无演示任务**（task_list 全 `demonstration=False`：BinFill / ButtonUnmask / ButtonUnmaskSwap / PickHighlight / PickXtimes / StopCube / SwingXtimes）→ 只返回 1 帧 init,SAM2Act+ 记忆靠评测循环 `infer→act` 逐步累积。这是 robomme **有意设计**(这些任务无机器人演示;`env_metadata/test/` 只存每集 seed/难度,**无录制轨迹**可补)。
+  > ✅ demo-rich 稠密灌种链路已**端到端验证**(2026-05-25, `sam2act_plus_all_v4/model_plus_last.pth`)：MoveCube 客户端日志 `feeding 16/247` + 服务端 `[SAM2ActPolicy] add_buffer: fed 16 demo frames into memory`;BinFill 为 `feeding 1/1`。两任务 success/fail/timeout 均正常。
 
 ### 16 个 HistoryBench / RoboMME 任务
 `PickXtimes, StopCube, SwingXtimes, BinFill, VideoUnmaskSwap, VideoUnmask, ButtonUnmaskSwap, ButtonUnmask, VideoRepick, VideoPlaceButton, VideoPlaceOrder, PickHighlight, InsertPeg, MoveCube, PatternLock, RouteStick`
