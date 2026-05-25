@@ -1,4 +1,109 @@
 
+# SAM2Act on RoboMME
+
+> **This fork adapts [SAM2Act / SAM2Act+](https://sam2act.github.io) to the
+> [RoboMME](https://github.com/RoboMME) simulation benchmark (16 HistoryBench / RoboMME tasks).**
+> SAM2Act is a discrete keyframe (**waypoint**) policy, so it is evaluated with RoboMME's
+> `action_space="waypoint"` . The original
+> SAM2Act README follows below this section.
+
+## Eval architecture
+
+Two processes talk over **WebSocket + msgpack**:
+
+| Process | Environment | Role |
+| --- | --- | --- |
+| **Inference server** | repo uv `.venv` (torch 2.5.1) | loads a SAM2Act checkpoint; serves `reset` / `add_buffer` / `infer` |
+| **Eval client** | micromamba env `sam2act-robomme-eval` (torch 2.9.1 + ManiSkill + RoboMME) | drives the sim + built-in waypoint planner, orchestrates episodes |
+
+## 1. Install
+
+### 1.0 Clone + submodule
+The RoboMME benchmark ships as a git submodule.
+```bash
+git clone <this-repo-url> && cd sam2act_historybench
+git submodule update --init third_party/robomme_benchmark 
+```
+
+### 1.1 Inference server env — uv `.venv`
+Requires [`uv`](https://docs.astral.sh/uv/). Builds `.venv` from `pyproject.toml` / `uv.lock`
+and installs the inference shims.
+```bash
+bash sam2act/historybench_eval/infer_env/setup_venv.sh
+# prints: OK: from sam2act.eval import load_agent
+```
+
+### 1.2 Eval client env — micromamba `sam2act-robomme-eval`
+Requires [`micromamba`](https://mamba.readthedocs.io/). Creates the env and editable-installs the
+in-repo RoboMME benchmark (`third_party/robomme_benchmark`) + `openpi-client` (`packages/`).
+```bash
+bash examples/sam2act/setup_env.sh
+```
+> The script expects micromamba at `/home/hongzefu/.local/bin/micromamba` with
+> `MAMBA_ROOT_PREFIX=/home/hongzefu/micromamba`. On another machine, edit `MM` /
+> `MAMBA_ROOT_PREFIX` at the top of `examples/sam2act/setup_env.sh` (and the same vars in
+> `examples/sam2act/run_eval.sh`).
+
+## 2. Download models
+
+Checkpoints are **not** tracked in git (`sam2act/runs` is git-ignored). Two pieces are needed.
+
+### 2.1 SAM2Act checkpoints — Hugging Face
+Published at **[HongzeFu/sam2act_robomme](https://huggingface.co/HongzeFu/sam2act_robomme)**,
+organized by run name.
+```bash
+pip install -U "huggingface_hub[cli]"
+# SAM2Act+ (recommended, memory-based) -> sam2act/runs/sam2act_plus_all_v4/
+hf download HongzeFu/sam2act_robomme \
+  --include "sam2act_plus_all_v4/model_plus_last.pth" "sam2act_plus_all_v4/*.yaml" \
+  --local-dir sam2act/runs
+# SAM2Act (base, optional)             -> sam2act/runs/sam2act_all_v1/
+hf download HongzeFu/sam2act_robomme \
+  --include "sam2act_all_v1/model_last.pth" "sam2act_all_v1/*.yaml" \
+  --local-dir sam2act/runs
+```
+(Drop the `--include` filters to fetch every training epoch as well.)
+
+### 2.2 SAM2 backbone weights
+SAM2Act builds on SAM2; fetch the base_plus backbone (`sam2.1_hiera_base_plus.pt`):
+```bash
+cd sam2act/mvt/sam2_train/checkpoints && bash download_ckpts.sh && cd -
+```
+
+## 3. Run evaluation
+
+### Option A — one-shot (tmux: server + client)
+```bash
+bash examples/sam2act/run_eval.sh
+```
+Defaults are set at the top of the script: `MODEL=sam2act_plus_all_v4/model_plus_last.pth`,
+`ONLY_TASKS=BinFill`, `MAX_EPISODES=5`, `MAX_STEPS=40`, server GPU 1 / client GPU 0. It picks a
+free port and launches both processes in one tmux session.
+
+### Option B — manual, two steps
+
+**Step 1 — start the WebSocket server (uv `.venv`):**
+```bash
+CUDA_VISIBLE_DEVICES=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True .venv/bin/python \
+  sam2act/historybench_eval/serve_policy.py \
+  --model_folder "$PWD/sam2act/runs/sam2act_plus_all_v4" \
+  --model_name model_plus_last.pth --device 0 --port 8011 --seed 0
+```
+> GPU: always use `CUDA_VISIBLE_DEVICES=<free gpu>` **together with** `--device 0` (CLIP defaults
+> to cuda:0, so they must land on the same device). Ready when the log shows the server listening
+> on the port (~20s to load the model).
+
+**Step 2 — run the eval client (micromamba env):**
+```bash
+CUDA_VISIBLE_DEVICES=0 /home/hongzefu/.local/bin/micromamba run -n sam2act-robomme-eval \
+  python examples/sam2act/eval.py --host 127.0.0.1 --port 8011 \
+  --only_tasks BinFill --max_episodes 5 --max_steps 40 --history_frames 16
+```
+- `--only_tasks` empty = all 16 tasks; `--max_episodes 0` = every episode of the task.
+- Results land in `examples/sam2act/runs/eval_<timestamp>/log.json` (+ incremental `progress.json`).
+
+---
+
 <p align="center">
     <h1 align="center">
         <img src="https://sam2act.github.io/static/images/img_logo.png" width="25px"/>
